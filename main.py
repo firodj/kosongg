@@ -35,6 +35,7 @@ if __name__ == '__main__':
         f.write("set(SDL2_DISABLE_SDL2MAIN ON)\n");
         f.write("add_subdirectory(ext/sdl2)\n")
         f.write("set(IMGUI_DIR ext/imgui-docking)\n")
+        f.write("set(VENDOR_DIR ../vendor)\n")
 
         f.write("include_directories(SYSTEM\n")
         f.write("  ${OPENGL_INCLUDE_DIR}\n")
@@ -45,8 +46,8 @@ if __name__ == '__main__':
         f.write(")\n")
 
         f.write("add_executable(%s\n"% (project_name))
-        f.write("  vendor/main.cpp\n")
-        f.write("  vendor/Engine.cpp\n")
+        f.write("  ${VENDOR_DIR}/main.cpp\n")
+        f.write("  ${VENDOR_DIR}/Engine.cpp\n")
 
         f.write("  ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer2.cpp\n")
         f.write("  ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp\n")

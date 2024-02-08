@@ -51,9 +51,10 @@ void Engine::Init() {
         return;
     }
 
-    //SDL_RendererInfo info;
-    //SDL_GetRendererInfo(renderer, &info);
-    //SDL_Log("Current SDL_Renderer: %s", info.name);
+    SDL_RendererInfo info;
+    SDL_GetRendererInfo(m_renderer, &info);
+    SDL_Log("Current SDL_Renderer: %s", info.name);
+    //SDL_RenderSetScale(m_renderer, 2.0, 2.0);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -62,9 +63,11 @@ void Engine::Init() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
+    //printf("DisplayFramebufferScale = {%f, %f}\n", io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
+    //ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForSDLRenderer(m_window, m_renderer);
@@ -79,13 +82,19 @@ void Engine::Init() {
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     //io.Fonts->AddFontDefault();
+
+    ImFontConfig config;
+    config.OversampleH = 4;
+    config.OversampleV = 2;
+    config.GlyphExtraSpacing.x = 0.0f;
+
+    ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/segoe-ui.ttf", 18.0f, &config);
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
-
+    IM_ASSERT(font != nullptr);
 }
 
 void Engine::Run() {
