@@ -27,7 +27,7 @@ if __name__ == '__main__':
                     value = "ON"
                 case False:
                     value = "OFF"
-            f.write('option("%s", "%s", %s)\n'  % (opt["variable"], opt["help"], value))
+            f.write('option("%s" "%s" %s)\n'  % (opt["variable"], opt["help"], value))
 
         f.write("find_package(OpenGL REQUIRED)\n")
 
@@ -43,6 +43,7 @@ if __name__ == '__main__':
 
         f.write("add_executable(%s\n"% (project_name))
         f.write("  vendor/main.cpp\n")
+        f.write("  vendor/Engine.cpp\n")
         f.write(")\n")
 
         f.write("target_compile_definitions(%s PUBLIC\n" % (project_name))
