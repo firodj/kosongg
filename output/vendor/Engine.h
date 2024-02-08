@@ -1,6 +1,7 @@
 #pragma once
 
 struct SDL_Window;
+struct SDL_Renderer;
 
 namespace kosongg {
 
@@ -11,7 +12,8 @@ protected:
     ~Engine();
 
 private:
-  SDL_Window *m_screen;
+  SDL_Window *m_window;
+  SDL_Renderer* m_renderer;
 
 public:
   Engine(Engine &other) = delete;

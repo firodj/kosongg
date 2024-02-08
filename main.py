@@ -34,16 +34,27 @@ if __name__ == '__main__':
         f.write("set(SDL_TEST OFF)\n");
         f.write("set(SDL2_DISABLE_SDL2MAIN ON)\n");
         f.write("add_subdirectory(ext/sdl2)\n")
+        f.write("set(IMGUI_DIR ext/imgui-docking)\n")
 
         f.write("include_directories(SYSTEM\n")
         f.write("  ${OPENGL_INCLUDE_DIR}\n")
-        f.write("   ext/sdl2/include\n")
+        f.write("  ext/sdl2/include\n")
         f.write("  glad/include\n")
+        f.write("  ${IMGUI_DIR}\n")
+        f.write("  ${IMGUI_DIR}/backends\n")
         f.write(")\n")
 
         f.write("add_executable(%s\n"% (project_name))
         f.write("  vendor/main.cpp\n")
         f.write("  vendor/Engine.cpp\n")
+
+        f.write("  ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer2.cpp\n")
+        f.write("  ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp\n")
+        f.write("  ${IMGUI_DIR}/imgui.cpp\n")
+        f.write("  ${IMGUI_DIR}/imgui_demo.cpp\n")
+        f.write("  ${IMGUI_DIR}/imgui_draw.cpp\n")
+        f.write("  ${IMGUI_DIR}/imgui_tables.cpp\n")
+        f.write("  ${IMGUI_DIR}/imgui_widgets.cpp\n")
         f.write(")\n")
 
         f.write("target_compile_definitions(%s PUBLIC\n" % (project_name))
@@ -61,4 +72,6 @@ if __name__ == '__main__':
         f.write(')\n')
 
 
+# cd output/ext
 # git clone --branch release-2.28.5 --depth=1 https://github.com/libsdl-org/SDL.git sdl2
+# git clone --branch docking --depth=1 https://github.com/ocornut/imgui.git imgui-docking
