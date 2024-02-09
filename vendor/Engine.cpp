@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <SDL.h>
 #include "Engine.h"
+#include "Component.h"
 
 namespace kosongg {
 
@@ -84,11 +85,14 @@ void Engine::Init() {
     //io.Fonts->AddFontDefault();
 
     ImFontConfig config;
-    config.OversampleH = 4;
-    config.OversampleV = 2;
-    config.GlyphExtraSpacing.x = 0.0f;
+    //config.OversampleH = 2;
+    //config.OversampleV = 2;
+    config.RasterizerDensity = 2.0f;    // for retina-display
+    //config.GlyphExtraSpacing.x = -0.5f;
 
-    ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/segoe-ui.ttf", 18.0f, &config);
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/segoe-ui.ttf", 18.0f, &config);
+    ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/SF-Pro-Text-Regular.otf", 14.0f, &config);
+
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
@@ -103,7 +107,7 @@ void Engine::Run() {
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 clear_color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 
     // Main loop
     bool done = false;
@@ -161,8 +165,22 @@ void Engine::Run() {
         {
             ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 4.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor(0x00, 0x7A, 0xFF));
+            ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(1.0f, 1.0f, 1.0f));
             if (ImGui::Button("Close Me"))
                 show_another_window = false;
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+            }
+
+            ImGui::ColoredButtonV1("Label");
+
+            ImGui::PopStyleColor(2);
+            ImGui::PopStyleVar(2);
+
             ImGui::End();
         }
 
