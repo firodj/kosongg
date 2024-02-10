@@ -89,9 +89,8 @@ void Engine::Init() {
     //config.OversampleV = 2;
     config.RasterizerDensity = 2.0f;    // for retina-display
     //config.GlyphExtraSpacing.x = -0.5f;
-
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/segoe-ui.ttf", 18.0f, &config);
-    ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/SF-Pro-Text-Regular.otf", 14.0f, &config);
+    ImFont* font = io.Fonts->AddFontFromFileTTF("kosongg/fonts/segoe-ui.ttf", 18.0f, &config);
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/SF-Pro-Text-Regular.otf", 14.0f, &config);
 
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
