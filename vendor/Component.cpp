@@ -36,6 +36,7 @@ void ImGui::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int ver
     }
 }
 
+#define COLORED_BUTTON_MODE 3
 
 // https://github.com/ocornut/imgui/issues/4722
 bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
@@ -68,6 +69,8 @@ bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButt
     // Render
     ImU32 bg_color_1 = IM_COL32(0xff, 0xff, 0xff, 255*0.47);
     ImU32 bg_color_2 = ImGui::GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+
+#if COLORED_BUTTON_MODE != 3
     ImVec4 bg1f = ColorConvertU32ToFloat4(bg_color_1);
     ImVec4 bg2f = ColorConvertU32ToFloat4(bg_color_2);
     ImColor blend = ImColor();
@@ -81,6 +84,8 @@ bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButt
     }
 
     bg_color_1 = (ImU32)blend;
+#endif
+
     const bool is_gradient = bg_color_1 != bg_color_2;
 #if 0
     if (held || hovered)
@@ -113,19 +118,31 @@ bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButt
 
     ImGui::RenderNavHighlight(bb, id);
 
-    //ImGui::RenderFrame(bb.Min, bb.Max, bg_color_2, true, style.FrameRounding);
-#if 0
+    //
+#if COLORED_BUTTON_MODE == 1
     // V1 : faster but prevents rounding
     window->DrawList->AddRectFilledMultiColor(bb.Min, bb.Max, bg_color_1, bg_color_1, bg_color_2, bg_color_2);
     if (g.Style.FrameBorderSize > 0.0f)
         window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), 0.0f, 0, g.Style.FrameBorderSize);
-#endif
+#elif COLORED_BUTTON_MODE == 2
     // V2
     int vert_start_idx = window->DrawList->VtxBuffer.Size;
     window->DrawList->AddRectFilled(bb.Min, bb.Max, IM_COL32(0, 0, 0, 0xff), g.Style.FrameRounding);
     int vert_end_idx = window->DrawList->VtxBuffer.Size;
     if (is_gradient)
         ShadeVertsLinearColorGradientKeepAlpha(window->DrawList, vert_start_idx, vert_end_idx, bb.Min, bb.GetBL(), bg_color_1, bg_color_2);
+#elif COLORED_BUTTON_MODE == 3
+    // V3
+    ImGui::RenderFrame(bb.Min, bb.Max, bg_color_2, true, style.FrameRounding);
+
+    if (is_gradient) {
+        int vert_start_idx = window->DrawList->VtxBuffer.Size;
+        window->DrawList->AddRectFilled(bb.Min, bb.Max, IM_COL32(0, 0, 0, 0xff), g.Style.FrameRounding);
+        int vert_end_idx = window->DrawList->VtxBuffer.Size;
+        ImU32 bg_color_3 = IM_COL32(0xff, 0xff, 0xff, 255*0);
+        ShadeVertsLinearColorGradientSetAlpha(window->DrawList, vert_start_idx, vert_end_idx, bb.Min, bb.GetBL(), bg_color_1, bg_color_3);
+    }
+#endif
     if (g.Style.FrameBorderSize > 0.0f)
         window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
 
