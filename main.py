@@ -86,9 +86,12 @@ if __name__ == '__main__':
         f.write("\n")
 
         f.write("set_target_properties(%s PROPERTIES\n" % (project_name))
-        f.write('  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"\n')
+        f.write('  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"\n')
+        f.write('  VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"\n')
         f.write('  DEBUG_POSTFIX "d"\n')
         f.write(')\n')
+
+        f.write('set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT emulasi)\n')
 
 
 # cd output/ext

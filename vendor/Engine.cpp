@@ -3,6 +3,7 @@
 #include "imgui_impl_sdlrenderer2.h"
 
 #include <thread>
+#include <mutex>
 #include <cstdio>
 #include <SDL.h>
 #include "Engine.h"
