@@ -11,23 +11,11 @@
 
 namespace kosongg {
 
-static Engine* g_engine{nullptr};
-static std::mutex g_engine_mutex;
+EngineBase::EngineBase(/* dependency */) {}
 
-Engine *Engine::GetInstance(/* dependency */)
-{
-    std::lock_guard<std::mutex> lock(g_engine_mutex);
-    if (g_engine == nullptr) {
-        g_engine = new Engine(/* dependency */);
-    }
-    return g_engine;
-}
+EngineBase::~EngineBase() {}
 
-Engine::Engine(/* dependency */) {}
-
-Engine::~Engine() {}
-
-void Engine::Init() {
+void EngineBase::InitSDL() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
         printf("Error: %s\n", SDL_GetError());
         return;
@@ -57,7 +45,9 @@ void Engine::Init() {
     SDL_GetRendererInfo(m_renderer, &info);
     SDL_Log("Current SDL_Renderer: %s", info.name);
     //SDL_RenderSetScale(m_renderer, 2.0, 2.0);
+}
 
+void EngineBase::InitImGui() {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -101,7 +91,7 @@ void Engine::Init() {
     IM_ASSERT(font != nullptr);
 }
 
-void Engine::Run() {
+void EngineBase::Run() {
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
     // Our state

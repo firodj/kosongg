@@ -5,24 +5,26 @@ struct SDL_Renderer;
 
 namespace kosongg {
 
-class Engine {
+class EngineBase {
 
 protected:
-    Engine(/* dependency */);
-    ~Engine();
-
-private:
   SDL_Window *m_window;
   SDL_Renderer* m_renderer;
 
+
+
+  void InitSDL();
+  void InitImGui();
+
 public:
-  Engine(Engine &other) = delete;
-  void operator=(const Engine &) = delete;
+   EngineBase(/* dependency */);
+  ~EngineBase();
 
-  static Engine *GetInstance(/* dependency */);
-  void Init();
+  EngineBase(EngineBase &other) = delete;
+  void operator=(const EngineBase &) = delete;
+
+  virtual void Init() = 0;
   void Run();
-
 };
 
 };
