@@ -1,7 +1,6 @@
 #pragma once
 
 struct SDL_Window;
-struct SDL_Renderer;
 typedef void *SDL_GLContext;
 
 namespace kosongg {
@@ -10,7 +9,6 @@ class EngineBase {
 
 protected:
   SDL_Window *m_window;
-  SDL_Renderer* m_renderer;
   SDL_GLContext m_glcontext;
   char* m_glsl_version;
   bool m_show_demo_window;
@@ -30,6 +28,7 @@ public:
 
   virtual void Init() = 0;
   void Run();
+  virtual void Clean() = 0;
 };
 
 };

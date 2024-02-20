@@ -7,6 +7,7 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
+#include <iostream>
 #include <thread>
 #include <mutex>
 #include <cstdio>
@@ -14,6 +15,7 @@
 
 #include "Engine.h"
 #include "Component.h"
+#include "GLUtil.h"
 
 namespace kosongg {
 
@@ -46,7 +48,7 @@ void EngineBase::InitSDL() {
     m_glsl_version = "#version 130";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
 
@@ -54,7 +56,7 @@ void EngineBase::InitSDL() {
 #ifdef SDL_HINT_IME_SHOW_UI
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #endif
-
+    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -63,17 +65,24 @@ void EngineBase::InitSDL() {
 
     m_window = SDL_CreateWindow("My SDL Empty Window",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-    if (m_window == nullptr)
-    {
+    if (m_window == nullptr) {
         printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
     }
 
     m_glcontext = SDL_GL_CreateContext(m_window);
+    if (m_glcontext == nullptr) {
+        printf("Error: SDL_GL_CreateContext(): %s\n", SDL_GetError());
+    }
     SDL_GL_MakeCurrent(m_window, m_glcontext);
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
     int version = gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
     SDL_Log("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+
+#ifdef WIN32
+    //glEnable(GL_DEBUG_OUTPUT);
+    //glDebugMessageCallback(OnGLMessageCallback, nullptr);
+#endif
 }
 
 void EngineBase::InitImGui() {
@@ -191,6 +200,8 @@ void EngineBase::RunImGui() {
 }
 
 void EngineBase::Run() {
+    SDL_GL_MakeCurrent(m_window, m_glcontext);
+
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImColor clear_color(m_clear_color);
 
@@ -257,4 +268,87 @@ void EngineBase::Run() {
     SDL_Quit();
 }
 
+void CheckGLError(const char *file, int line)
+{
+  GLenum err;
+  while((err = glGetError()) != GL_NO_ERROR)
+  {
+    std::string error;
+
+    switch(err) {
+
+      case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
+      case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
+      case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
+      case GL_STACK_OVERFLOW:         error="STACK_OVERFLOW";         break;
+      case GL_STACK_UNDERFLOW:        error="STACK_UNDERFLOW";        break;
+      case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
+      case GL_CONTEXT_LOST:           error="GL_CONTEXT_LOST";        break;
+      //case GL_TABLE_TOO_LARGE:        error="GL_TABLE_TOO_LARGE";     break;
+    }
+
+    std::cerr << "GL_" << error.c_str() <<" - "<<file<<":"<<line << std::endl;
+    assert(err == GL_NO_ERROR);
+  }
 }
+
+void GLAPIENTRY OnGLMessageCallback(GLenum source,
+  GLenum type,
+  GLuint id,
+  GLenum severity,
+  GLsizei length,
+  const GLchar* message,
+  const void* userParam)
+{
+  std::cout << "---------------------opengl-callback-start------------" << std::endl;
+  std::cout << "message: " << message << std::endl;
+  std::cout << "type: ";
+  switch (type) {
+  case GL_DEBUG_TYPE_ERROR:
+    std::cout << "ERROR";
+    break;
+  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+    std::cout << "DEPRECATED_BEHAVIOR";
+    break;
+  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+    std::cout << "UNDEFINED_BEHAVIOR";
+    break;
+  case GL_DEBUG_TYPE_PORTABILITY:
+    std::cout << "PORTABILITY";
+    break;
+  case GL_DEBUG_TYPE_PERFORMANCE:
+    std::cout << "PERFORMANCE";
+    break;
+  case GL_DEBUG_TYPE_OTHER:
+    std::cout << "OTHER";
+    break;
+  default:
+    std::cout << "0x" << std::hex << type;
+  }
+  std::cout << std::endl;
+
+  std::cout << "id: 0x" << std::hex << id << std::endl;
+  std::cout << "severity: ";
+  switch (severity) {
+  case GL_DEBUG_SEVERITY_LOW:
+    std::cout << "LOW";
+    break;
+  case GL_DEBUG_SEVERITY_MEDIUM:
+    std::cout << "MEDIUM";
+    break;
+  case GL_DEBUG_SEVERITY_HIGH:
+    std::cout << "HIGH";
+    break;
+  case GL_DEBUG_SEVERITY_NOTIFICATION:
+    std::cout << "NOTIFICATION";
+    break;
+  default:
+    std::cout << "0x" << std::hex << severity;
+  }
+  std::cout << std::endl;
+  std::cout << "---------------------opengl-callback-end--------------" << std::endl;
+}
+
+}
+

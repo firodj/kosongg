@@ -41,3 +41,4 @@ if __name__ == '__main__':
 # git clone --branch 0.8.0 --depth=1 https://github.com/jbeder/yaml-cpp.git yaml-cpp
 # git clone --branch 2.0.1.post1 --depth=1 https://github.com/unicorn-engine/unicorn.git
 # git clone --branch glad2 --depth=1 https://github.com/Dav1dde/glad.git glad2
+# git clone --branch 1.0.0 --depth=1 https://github.com/g-truc/glm.git
