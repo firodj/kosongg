@@ -13,9 +13,9 @@
 #include <cstdio>
 #include <SDL.h>
 
-#include "Engine.h"
-#include "Component.h"
-#include "GLUtil.h"
+#include "kosongg/Engine.h"
+#include "kosongg/Component.h"
+#include "kosongg/GLUtil.h"
 
 namespace kosongg {
 

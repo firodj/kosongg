@@ -4,7 +4,7 @@
 
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "Component.h"
+#include "kosongg/Component.h"
 
 // TODO: shadow https://github.com/ocornut/imgui/issues/1329
 

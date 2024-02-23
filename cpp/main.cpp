@@ -1,6 +1,6 @@
-#include "Engine.h"
+#include "kosongg/Engine.h"
 
-#include "../../src/MainApp.h"
+#include "MainApp.h"
 
 int main(int argc, char ** argv)
 {
