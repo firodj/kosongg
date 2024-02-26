@@ -24,12 +24,29 @@ class LibraryManager:
     def enable(self, name):
         if name in self.libraries:
             self.libraries[name]['enable'] = True
-            print(self.libraries[name])
         else:
             raise Exception("unknown lib name: " + name)
-
     def enable_libraries(self):
         return list(filter(lambda libinfo: libinfo.get('enable') == True, self.libraries.values()))
+    def add(self, name):
+        repo = self.libraries[name]['repo']
+        repo_path = project_path + '/' + repo['path']
+
+        try:
+            print(repo)
+            porcelain.clone(repo['url'], repo_path, depth=1, branch=repo['branch'])
+        except FileExistsError as e:
+            print(e)
+
+        r = Repo(repo_path)
+        print(r)
+        refs = [k for k, v in r.get_refs().items() if v == r.head()]
+        refs.append(r.head())
+        print(refs)
+
+        cfg = r.get_config()
+        secs = list(cfg.sections())
+        print(secs)
 
 libmgr = LibraryManager()
 
@@ -47,7 +64,12 @@ def useUnicornEngine():
                  help="Use hardware virtualization backend for Unicorn-Engine",
                  value=False)
         ],
-        path = "ext/unicorn"
+        path = "ext/unicorn2",
+        repo = dict(
+            url='https://github.com/unicorn-engine/unicorn.git',
+            path='ext/unicorn2',
+            branch='2.0.1.post1',
+        )
     ))
 
 def useSDL2():
@@ -98,7 +120,12 @@ def useGlad():
         cmds = [
             'add_subdirectory("${GLAD_SOURCES_DIR}/cmake" glad_cmake)',
             'glad_add_library(glad_gl_core_33 REPRODUCIBLE API gl:core=3.3)',
-        ]
+        ],
+        repo = dict(
+            url='https://github.com/Dav1dde/glad.git',
+            path='ext/glad2',
+            branch='glad2',
+        )
     ))
 
 def useGlm():
@@ -108,6 +135,11 @@ def useGlm():
         include_dirs = [
             '${GLM_DIR}',
         ],
+        repo = dict(
+            url='https://github.com/g-truc/glm.git',
+            path='ext/glm',
+            branch='1.0.0',
+        )
     ))
 
 def useImgui():
@@ -126,7 +158,12 @@ def useImgui():
             '${IMGUI_DIR}/imgui_draw.cpp',
             '${IMGUI_DIR}/imgui_tables.cpp',
             '${IMGUI_DIR}/imgui_widgets.cpp',
-        ]
+        ],
+        repo = dict(
+            url='https://github.com/ocornut/imgui.git',
+            path='ext/imgui-docking',
+            branch='docking',
+        )
     ))
 
 def useYaml():
@@ -139,6 +176,11 @@ def useYaml():
         link_libs = [
             'yaml-cpp'
         ],
+        repo = dict(
+            url='https://github.com/jbeder/yaml-cpp.git',
+            path='ext/yaml-cpp',
+            branch='0.8.0',
+        )
     ))
 
 def value_format(value):
@@ -220,14 +262,11 @@ if __name__ == '__main__':
     libmgr.enable('imgui')
     libmgr.enable('yaml-cpp')
 
+    libmgr.add('sdl2')
+    libmgr.add('unicorn')
+
     getExistingSources()
-    createCMake()
+    #createCMake()
 
 # cd output/ext
-
-# git clone --branch docking --depth=1 https://github.com/ocornut/imgui.git imgui-docking
-# git clone --branch 0.8.0 --depth=1 https://github.com/jbeder/yaml-cpp.git yaml-cpp
-# git clone --branch 2.0.1.post1 --depth=1 https://github.com/unicorn-engine/unicorn.git
-# git clone --branch glad2 --depth=1 https://github.com/Dav1dde/glad.git glad2
-# git clone --branch 1.0.0 --depth=1 https://github.com/g-truc/glm.git
 # git clone --branch=mob --depth=1 git://repo.or.cz/tinycc.git
