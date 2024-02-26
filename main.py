@@ -260,13 +260,16 @@ if __name__ == '__main__':
     libmgr.enable('glad')
     libmgr.enable('glm')
     libmgr.enable('imgui')
-    libmgr.enable('yaml-cpp')
+    #libmgr.enable('yaml-cpp')
 
     libmgr.add('sdl2')
+    libmgr.add('imgui')
+    libmgr.add('glad')
+    libmgr.add('glm')
     libmgr.add('unicorn')
 
     getExistingSources()
-    #createCMake()
+    createCMake()
 
 # cd output/ext
 # git clone --branch=mob --depth=1 git://repo.or.cz/tinycc.git
