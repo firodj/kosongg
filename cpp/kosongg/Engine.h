@@ -14,6 +14,9 @@ protected:
   bool m_show_demo_window;
   bool m_show_another_window;
   unsigned int m_clear_color;
+  float m_hidpi_x, m_hidpi_y;
+  int m_window_width, m_window_height;
+  int m_screen_width, m_screen_height;
 
   void InitSDL();
   void InitImGui();

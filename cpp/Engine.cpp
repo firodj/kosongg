@@ -62,9 +62,10 @@ void EngineBase::InitSDL() {
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-
+    m_window_width = 1280;
+    m_window_height = 720;
     m_window = SDL_CreateWindow("My SDL Empty Window",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_window_width, m_window_height, window_flags);
     if (m_window == nullptr) {
         printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
     }
@@ -75,6 +76,9 @@ void EngineBase::InitSDL() {
     }
     SDL_GL_MakeCurrent(m_window, m_glcontext);
     SDL_GL_SetSwapInterval(1); // Enable vsync
+    SDL_GL_GetDrawableSize(m_window, &m_screen_width, &m_screen_height);
+    m_hidpi_x = (float)m_screen_width / m_window_width;
+    m_hidpi_y = (float)m_screen_height / m_window_height;
 
     int version = gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
     SDL_Log("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
@@ -126,7 +130,7 @@ void EngineBase::InitImGui() {
     ImFontConfig config;
     //config.OversampleH = 2;
     //config.OversampleV = 2;
-    config.RasterizerDensity = 2.0f;    // for retina-display
+    config.RasterizerDensity = m_hidpi_x;    // 2.0f for retina-display
     //config.GlyphExtraSpacing.x = -0.5f;
     ImFont* font = io.Fonts->AddFontFromFileTTF("kosongg/fonts/selawkl.ttf", 18.0f, &config);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/SF-Pro-Text-Regular.otf", 14.0f, &config);
