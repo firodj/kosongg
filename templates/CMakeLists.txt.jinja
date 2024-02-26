@@ -4,76 +4,95 @@ project({{ project_name }})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_STANDARD {{ cpp_std }})
 set(CMAKE_C_STANDARD {{ c_std }})
-{% for opt in options %}
-option("{{ opt.variable }}" "{{ opt.help }}" {{ "ON" if opt.value else "OFF" }})
+set(VENDOR_DIR kosongg/cpp)
+
+if (APPLE)
+  ## update the environment with VIRTUAL_ENV variable (mimic the activate script)
+  set (ENV{VIRTUAL_ENV} "${CMAKE_SOURCE_DIR}/venv")
+  ## change the context of the search
+  set (Python3_FIND_VIRTUALENV FIRST)
+  ## unset Python3_EXECUTABLE because it is also an input variable (see documentation, Artifacts Specification section)
+  unset (Python3_EXECUTABLE)
+endif()
+
+{%- for lib in libraries -%}
+{%- for opt in lib.options if lib.options %}
+option("{{ opt.name }}" "{{ opt.help }}" {{ opt.value | value_format }})
+{%- endfor %}
+{%- for req in lib.requires if lib.requires %}
+find_package({{ req }} REQUIRED)
+{%- endfor %}
 {%- endfor %}
 
-find_package(OpenGL REQUIRED)
-
-set(IMGUI_DIR ext/imgui-docking)
-set(VENDOR_DIR kosongg/vendor)
-set(GLAD_SOURCES_DIR "${PROJECT_SOURCE_DIR}/ext/glad2")
-
-set(SDL_TEST OFF)
-set(SDL2_DISABLE_SDL2MAIN ON)
-add_subdirectory(ext/sdl2)
-
-add_subdirectory(ext/yaml-cpp)
-
-set(UNICORN_BUILD_SAMPLES OFF)
-set(UNICORN_ARCH "x86")
-add_subdirectory(ext/unicorn)
-
-add_subdirectory("${GLAD_SOURCES_DIR}/cmake" glad_cmake)
-glad_add_library(glad_gl_core_33 REPRODUCIBLE API gl:core=3.3)
+{%- for lib in libraries -%}
+{%- for set in lib.sets if lib.sets %}
+set("{{ set.name }}" {{ set.value | value_format }})
+{%- endfor %}
+{%- if lib.path %}
+add_subdirectory({{ lib.path }})
+{%- endif %}
+{%- for cmd in lib.cmds if lib.cmds %}
+{{ cmd }}
+{%- endfor %}
+{%- endfor %}
 
 include_directories(SYSTEM
-  ${OPENGL_INCLUDE_DIR}
-  ${SDL2_SOURCE_DIR}/include
-  glad/include
-  ${IMGUI_DIR}
-  ${IMGUI_DIR}/backends
-
-  ${unicorn_SOURCE_DIR}/include
-  ${YAML_CPP_SOURCE_DIR}/include
+{%- for lib in libraries -%}
+{% for inc in lib.include_dirs if lib.include_dirs %}
+  {{ inc }}
+{%- endfor %}
+{%- endfor %}
 )
 
 set(SOURCE
   ${VENDOR_DIR}/main.cpp
   ${VENDOR_DIR}/Engine.cpp
   ${VENDOR_DIR}/Component.cpp
-  ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-  ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp
-  ${IMGUI_DIR}/imgui.cpp
-  ${IMGUI_DIR}/imgui_demo.cpp
-  ${IMGUI_DIR}/imgui_draw.cpp
-  ${IMGUI_DIR}/imgui_tables.cpp
-  ${IMGUI_DIR}/imgui_widgets.cpp
 
-  src/MainApp.cpp
+{%- for lib in libraries -%}
+{% for src in lib.sources if lib.sources %}
+  {{ src }}
+{%- endfor %}
+{%- endfor %}
+## -- sources --
+{%- for src in sources %}
+  {{ src }}
+{%- endfor %}
+## -- endsources --
 )
 
-SET(HEADERS
-  ${VENDOR_DIR}/Component.h
-  ${VENDOR_DIR}/Engine.h
+set(HEADERS
+  ${VENDOR_DIR}/kosongg/Component.h
+  ${VENDOR_DIR}/kosongg/Engine.h
+  ${VENDOR_DIR}/kosongg/GLUtil.h
+## -- headers --
+{%- for hdr in headers %}
+  {{ hdr }}
+{%- endfor %}
+## -- endheaders --
+)
 
-  src/MainApp.h
+include_directories(
+  ${VENDOR_DIR}
+  src
 )
 
 add_executable({{ project_name }}
   ${SOURCE} ${HEADERS}
 )
 
+if (MSVC)
 target_compile_definitions({{ project_name }} PUBLIC
   -D_CRT_SECURE_NO_WARNINGS
 )
+endif()
 
 target_link_libraries({{ project_name }}
-  ${OPENGL_LIBRARIES}
-  glad_gl_core_33
-  SDL2-static
-  yaml-cpp
-  unicorn
+{%- for lib in libraries -%}
+{% for libname in lib.link_libs if lib.link_libs %}
+  {{ libname }}
+{%- endfor %}
+{%- endfor %}
 )
 
 set_target_properties({{ project_name }} PROPERTIES
@@ -83,4 +102,3 @@ set_target_properties({{ project_name }} PROPERTIES
 )
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT {{ project_name }})
-
