@@ -13,13 +13,28 @@ current_path = os.path.dirname(__file__)
 project_path = os.path.normpath(os.path.join(current_path, '../'))
 project_name = os.path.basename(project_path)
 
-libraries = []
-
 sources = []
 headers = []
 
+class LibraryManager:
+    def __init__(self):
+        self.libraries = dict()
+    def append(self, libinfo):
+        self.libraries[libinfo['name']] = libinfo
+    def enable(self, name):
+        if name in self.libraries:
+            self.libraries[name]['enable'] = True
+            print(self.libraries[name])
+        else:
+            raise Exception("unknown lib name: " + name)
+
+    def enable_libraries(self):
+        return list(filter(lambda libinfo: libinfo.get('enable') == True, self.libraries.values()))
+
+libmgr = LibraryManager()
+
 def useUnicornEngine():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "unicorn",
         include_dirs = ['${unicorn_SOURCE_DIR}/include'],
         sets = [
@@ -36,7 +51,7 @@ def useUnicornEngine():
     ))
 
 def useSDL2():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "sdl2",
         include_dirs = ['${SDL2_SOURCE_DIR}/include'],
         sets = [
@@ -48,11 +63,16 @@ def useSDL2():
         path = "ext/sdl2",
         sources = [
             '${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp'
-        ]
+        ],
+        repo = dict(
+            url='https://github.com/libsdl-org/SDL.git',
+            path='ext/sdl2',
+            branch='release-2.28.5',
+        )
     ))
 
 def useOpenGL():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "opengl",
         requires = ['OpenGL'],
         sources = [
@@ -67,7 +87,7 @@ def useOpenGL():
     ))
 
 def useGlad():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "glad",
         link_libs = [
             'glad_gl_core_33',
@@ -82,7 +102,7 @@ def useGlad():
     ))
 
 def useGlm():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "glm",
         sets = [dict(name='GLM_DIR', value='ext/glm')],
         include_dirs = [
@@ -91,7 +111,7 @@ def useGlm():
     ))
 
 def useImgui():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "imgui",
         sets = [
             dict(name='IMGUI_DIR', value='ext/imgui-docking'),
@@ -110,7 +130,7 @@ def useImgui():
     ))
 
 def useYaml():
-    libraries.append(dict(
+    libmgr.append(dict(
         name = "yaml-cpp",
         path = "ext/yaml-cpp",
         iinclude_dirs = [
@@ -135,17 +155,18 @@ def createCMake():
     env.filters["value_format"] = value_format
     template = env.get_template("CMakeLists.txt.jinja")
 
+    contents = template.render(
+        cmake_min_version=cmake_min_version,
+        project_name=project_name,
+        cpp_std=cpp_std,
+        c_std=c_std,
+        libraries=libmgr.enable_libraries(),
+        sources=sources,
+        headers=headers,
+    )
 
     with open(os.path.join(project_path, 'CMakeLists.txt'), 'w') as f:
-        f.write(template.render(
-            cmake_min_version=cmake_min_version,
-            project_name=project_name,
-            cpp_std=cpp_std,
-            c_std=c_std,
-            libraries=libraries,
-            sources=sources,
-            headers=headers,
-        ))
+        f.write(contents)
 
 def checkExt():
     for extpath in os.listdir(project_path + '/ext'):
@@ -190,11 +211,20 @@ if __name__ == '__main__':
     useGlad()
     useGlm()
     useYaml()
+
+    libmgr.enable('opengl')
+    libmgr.enable('unicorn')
+    libmgr.enable('sdl2')
+    libmgr.enable('glad')
+    libmgr.enable('glm')
+    libmgr.enable('imgui')
+    libmgr.enable('yaml-cpp')
+
     getExistingSources()
     createCMake()
 
 # cd output/ext
-# git clone --branch release-2.28.5 --depth=1 https://github.com/libsdl-org/SDL.git sdl2
+
 # git clone --branch docking --depth=1 https://github.com/ocornut/imgui.git imgui-docking
 # git clone --branch 0.8.0 --depth=1 https://github.com/jbeder/yaml-cpp.git yaml-cpp
 # git clone --branch 2.0.1.post1 --depth=1 https://github.com/unicorn-engine/unicorn.git
