@@ -72,6 +72,43 @@ def useUnicornEngine():
         )
     ))
 
+def useKeystoneEngine():
+    libmgr.append(dict(
+        name="keystone",
+        path = "ext/keystone",
+        link_libs = ["keystone"],
+        include_dirs = ['${keystone_SOURCE_DIR}/include'],
+        sets = [
+            dict(name="LLVM_TARGETS_TO_BUILD", value="X86"),
+            dict(name="BUILD_LIBS_ONLY", value=True),
+        ],
+        repo=dict(
+            url='git@github.com:firodj/keystone.git',
+            path='ext/keystone',
+            branch='firodj'
+        )
+    ))
+
+def useCapstoneEngine():
+    libmgr.append(dict(
+        name="capstone",
+        path = "ext/capstone",
+        sets = [
+            dict(name="CAPSTONE_BUILD_TESTS", value=False),
+            dict(name="CAPSTONE_BUILD_CSTOOL", value=False),
+            dict(name="CAPSTONE_ARCHITECTURE_DEFAULT", value=False),
+            dict(name="CAPSTONE_X86_SUPPORT", value=True),
+            dict(name="BUILD_SHARED_LIBS", value=False),
+        ],
+        link_libs = ["capstone"],
+        include_dirs = ['${capstone_SOURCE_DIR}/include'],
+        repo=dict(
+            url='https://github.com/capstone-engine/capstone.git',
+            path='ext/capstone',
+            branch='5.0.1'
+        )
+    ))
+
 def useSDL2():
     libmgr.append(dict(
         name = "sdl2",
@@ -105,6 +142,18 @@ def useOpenGL():
         ],
         link_libs = [
             '${OPENGL_LIBRARIES}',
+        ],
+    ))
+
+def useOpenAL():
+    libmgr.append(dict(
+        name = "openal",
+        requires = ['OpenAL'],
+        include_dirs = [
+            '${OPENAL_INCLUDE_DIR}',
+        ],
+        link_libs = [
+            '${OPENAL_LIBRARY}',
         ],
     ))
 
@@ -247,7 +296,10 @@ def getExistingSources():
 
 if __name__ == '__main__':
     useOpenGL()
+    useOpenAL()
     useUnicornEngine()
+    useKeystoneEngine()
+    useCapstoneEngine()
     useSDL2()
     useImgui()
     useGlad()
@@ -255,11 +307,15 @@ if __name__ == '__main__':
     useYaml()
 
     libmgr.enable('opengl')
+    libmgr.enable('openal')
     libmgr.enable('unicorn')
+    libmgr.enable('capstone')
+    libmgr.enable('keystone')
     libmgr.enable('sdl2')
     libmgr.enable('glad')
     libmgr.enable('glm')
     libmgr.enable('imgui')
+
     #libmgr.enable('yaml-cpp')
 
     libmgr.add('sdl2')
@@ -267,6 +323,8 @@ if __name__ == '__main__':
     libmgr.add('glad')
     libmgr.add('glm')
     libmgr.add('unicorn')
+    libmgr.enable('capstone')
+    libmgr.enable('keystone')
 
     getExistingSources()
     createCMake()

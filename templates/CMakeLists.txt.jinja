@@ -82,7 +82,9 @@ add_executable({{ project_name }}
 )
 
 if (MSVC)
-target_compile_definitions({{ project_name }} PUBLIC
+  target_link_libraries({{ project_name }} winmm ws2_32)
+  # Silence MSVC CRT security warnings
+  target_compile_definitions({{ project_name }} PUBLIC
   -D_CRT_SECURE_NO_WARNINGS
 )
 endif()
