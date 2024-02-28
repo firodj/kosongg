@@ -82,12 +82,31 @@ add_executable({{ project_name }}
 )
 
 if (MSVC)
-  target_link_libraries({{ project_name }} winmm ws2_32)
+{%- if msvc.link_libs %}
+  target_link_libraries({{ project_name }}
+{%- for libname in msvc.link_libs %}
+    {{ libname }}
+{%- endfor %}
+  )
+{%- endif %}
+
+
   # Silence MSVC CRT security warnings
   target_compile_definitions({{ project_name }} PUBLIC
-  -D_CRT_SECURE_NO_WARNINGS
-)
+    -D_CRT_SECURE_NO_WARNINGS
+{% for def in msvc.defs if msvc.defs %}
+    {{ def }}
+{%- endfor %}
+  )
 endif()
+
+target_compile_definitions({{ project_name }} PUBLIC -D_USE_
+{%- for lib in libraries -%}
+{% for def in lib.defs if lib.defs %}
+  {{ def }}
+{%- endfor %}
+{%- endfor %}
+)
 
 target_link_libraries({{ project_name }}
 {%- for lib in libraries -%}

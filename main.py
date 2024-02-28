@@ -219,7 +219,7 @@ def useYaml():
     libmgr.append(dict(
         name = "yaml-cpp",
         path = "ext/yaml-cpp",
-        iinclude_dirs = [
+        include_dirs = [
             '${YAML_CPP_SOURCE_DIR}/include',
         ],
         link_libs = [
@@ -229,6 +229,26 @@ def useYaml():
             url='https://github.com/jbeder/yaml-cpp.git',
             path='ext/yaml-cpp',
             branch='0.8.0',
+        )
+    ))
+
+def useEnet():
+    libmgr.append(dict(
+        name="enet",
+        path="ext/enet",
+        include_dirs=['${enet_SOURCE_DIR}/include'],
+        link_libs = [
+            "enet"
+        ],
+        defs = ["-DDPLAY_ENET"],
+        repo=dict(
+            url="https://github.com/lsalzman/enet.git",
+            path="ext/enet",
+            branch="v1.3.14",
+        ),
+        msvc = dict(
+            link_libs = ["winmm", "ws2_32"],
+            defs = ["-D_WINSOCKAPI_"]
         )
     ))
 
@@ -245,15 +265,31 @@ def createCMake():
     )
     env.filters["value_format"] = value_format
     template = env.get_template("CMakeLists.txt.jinja")
+    libs = libmgr.enable_libraries()
+
+    msvc = dict(
+        defs = [],
+        link_libs = [],
+    )
+    for lib in libs:
+        lib_msvc = lib.get('msvc')
+        if lib_msvc is not None:
+            msvc_defs = lib_msvc.get('defs')
+            msvc_link_libs = lib_msvc.get('link_libs')
+            if msvc_link_libs:
+                msvc['link_libs'] += msvc_link_libs
+            if msvc_defs:
+                msvc['defs'] += msvc_defs
 
     contents = template.render(
         cmake_min_version=cmake_min_version,
         project_name=project_name,
         cpp_std=cpp_std,
         c_std=c_std,
-        libraries=libmgr.enable_libraries(),
+        libraries=libs,
         sources=sources,
         headers=headers,
+        msvc=msvc,
     )
 
     with open(os.path.join(project_path, 'CMakeLists.txt'), 'w') as f:
@@ -305,6 +341,7 @@ if __name__ == '__main__':
     useGlad()
     useGlm()
     useYaml()
+    useEnet()
 
     libmgr.enable('opengl')
     libmgr.enable('openal')
@@ -315,6 +352,7 @@ if __name__ == '__main__':
     libmgr.enable('glad')
     libmgr.enable('glm')
     libmgr.enable('imgui')
+    libmgr.enable('enet')
 
     #libmgr.enable('yaml-cpp')
 
@@ -323,8 +361,9 @@ if __name__ == '__main__':
     libmgr.add('glad')
     libmgr.add('glm')
     libmgr.add('unicorn')
-    libmgr.enable('capstone')
-    libmgr.enable('keystone')
+    libmgr.add('capstone')
+    libmgr.add('keystone')
+    libmgr.add('enet')
 
     getExistingSources()
     createCMake()
