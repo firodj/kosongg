@@ -252,6 +252,21 @@ def useEnet():
         )
     ))
 
+def useFmt():
+    libmgr.append(dict(
+        name="fmt",
+        path="ext/fmt",
+        include_dirs=['${fmt_SOURCE_DIR}/include'],
+        link_libs = [
+            "fmt"
+        ],
+        repo=dict(
+            url="https://github.com/fmtlib/fmt.git",
+            path="ext/fmt",
+            branch="10.2.1",
+        ),
+    ))
+
 def value_format(value):
     if type(value) is bool:
         return "ON" if value else "OFF"
@@ -342,6 +357,7 @@ if __name__ == '__main__':
     useGlm()
     useYaml()
     useEnet()
+    useFmt()
 
     libmgr.enable('opengl')
     libmgr.enable('openal')
@@ -353,6 +369,7 @@ if __name__ == '__main__':
     libmgr.enable('glm')
     libmgr.enable('imgui')
     libmgr.enable('enet')
+    libmgr.enable('fmt')
 
     #libmgr.enable('yaml-cpp')
 
@@ -364,6 +381,7 @@ if __name__ == '__main__':
     libmgr.add('capstone')
     libmgr.add('keystone')
     libmgr.add('enet')
+    libmgr.add('fmt')
 
     getExistingSources()
     createCMake()
