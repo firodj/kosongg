@@ -10,7 +10,7 @@ class EngineBase {
 protected:
   SDL_Window *m_window;
   SDL_GLContext m_glcontext;
-  char* m_glsl_version;
+  const char* m_glsl_version;
   bool m_show_demo_window;
   bool m_show_another_window;
   unsigned int m_clear_color;
