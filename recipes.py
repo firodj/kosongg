@@ -50,6 +50,7 @@ class LibraryManager:
         self.useYaml()
         self.useEnet()
         self.useFmt()
+        self.usePeParse()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -265,5 +266,19 @@ class LibraryManager:
                 url="https://github.com/fmtlib/fmt.git",
                 path="ext/fmt",
                 branch="10.2.1",
+            ),
+        ))
+
+    def usePeParse(self):
+        self.append(dict(
+            name="pe-parse",
+            path="ext/pe-parse/pe-parser-library",
+            link_libs = [
+                "pe-parse::pe-parse"
+            ],
+            repo=dict(
+                url="https://github.com/trailofbits/pe-parse.git",
+                path="ext/pe-parse",
+                branch="v2.1.1",
             ),
         ))
