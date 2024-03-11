@@ -51,6 +51,7 @@ class LibraryManager:
         self.useEnet()
         self.useFmt()
         self.usePeParse()
+        self.useGoogleTest()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -280,5 +281,16 @@ class LibraryManager:
                 url="https://github.com/trailofbits/pe-parse.git",
                 path="ext/pe-parse",
                 branch="v2.1.1",
+            ),
+        ))
+
+    def useGoogleTest(self):
+        self.append(dict(
+            name="googletest",
+            path="ext/googletest",
+            repo=dict(
+                url="https://github.com/google/googletest.git",
+                path="ext/googletest",
+                branch="v1.14.0",
             ),
         ))

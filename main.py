@@ -16,6 +16,7 @@ project_name = os.path.basename(project_path)
 
 sources = []
 headers = []
+others  = []
 
 libmgr = recipes.LibraryManager(project_path)
 
@@ -56,6 +57,7 @@ def createCMake():
         libraries=libs,
         sources=sources,
         headers=headers,
+        others=others,
         msvc=msvc,
     )
 
@@ -86,6 +88,8 @@ def getExistingSources():
                     capture = "sources"
                 elif line.startswith("## -- headers"):
                     capture = "headers"
+                elif line.startswith("## -- others"):
+                    capture = "others"
                 elif line.startswith("## -- end"):
                     capture = None
                 else:
@@ -94,6 +98,9 @@ def getExistingSources():
                             sources.append(line)
                         case "headers":
                             headers.append(line)
+                        case "others":
+                            others.append(line)
+
     except FileNotFoundError as e:
         print(e)
 
