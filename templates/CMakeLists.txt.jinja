@@ -81,6 +81,9 @@ add_executable({{ project_name }}
   ${SOURCE} ${HEADERS}
 )
 
+source_group("Source Files" FILES ${SOURCE})
+source_group("Header Files" FILES ${HEADERS})
+
 if (MSVC)
 {%- if msvc.link_libs %}
   target_link_libraries({{ project_name }}

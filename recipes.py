@@ -52,6 +52,7 @@ class LibraryManager:
         self.useFmt()
         self.usePeParse()
         self.useGoogleTest()
+        self.useArgh()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -292,5 +293,20 @@ class LibraryManager:
                 url="https://github.com/google/googletest.git",
                 path="ext/googletest",
                 branch="v1.14.0",
+            ),
+        ))
+
+    def useArgh(self):
+        self.append(dict(
+            name="argh",
+            path="ext/argh",
+            sets = [
+                dict(name="BUILD_TESTS", value=False),
+                dict(name="BUILD_EXAMPLES", value=False),
+            ],
+            repo=dict(
+                url="https://github.com/adishavit/argh",
+                path="ext/argh",
+                branch="v1.3.2",
             ),
         ))
