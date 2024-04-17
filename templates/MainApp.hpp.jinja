@@ -1,0 +1,19 @@
+#pragma once
+
+class MainApp {
+public:
+    ~MainApp();
+
+protected:
+    MainApp(/* dependency */);
+
+public:
+    MainApp(MainApp &other) = delete;
+    void operator=(const MainApp &) = delete;
+
+    static MainApp *GetInstance(/* dependency */);
+
+    void Init();
+    void Run();
+    void Clean();
+};

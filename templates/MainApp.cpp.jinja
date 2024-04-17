@@ -1,0 +1,37 @@
+#include "MainApp.h"
+#include <thread>
+#include <mutex>
+#include <memory>
+
+static std::unique_ptr<MainApp> g_mainapp;
+
+static std::mutex g_mainapp_mutex;
+
+MainApp *MainApp::GetInstance(/* dependency */)
+{
+  std::lock_guard<std::mutex> lock(g_mainapp_mutex);
+  if (g_mainapp == nullptr) {
+    g_mainapp = std::unique_ptr<MainApp>(new MainApp(/* dependency */));
+  }
+  return g_mainapp.get();
+}
+
+MainApp::MainApp(/* dependency */) {
+
+}
+
+MainApp::~MainApp() {
+
+}
+
+void MainApp::Init() {
+
+}
+
+void MainApp::Run() {
+
+}
+
+void MainApp::Clean() {
+
+}

@@ -6,15 +6,25 @@ class LibraryManager:
         self.libraries = dict()
         self.project_path = project_path
         self.registers()
+
     def append(self, libinfo):
         self.libraries[libinfo['name']] = libinfo
+
     def enable(self, name):
         if name in self.libraries:
             self.libraries[name]['enable'] = True
         else:
             raise Exception("unknown lib name: " + name)
+
+    def is_enabled(self, name):
+        if name in self.libraries:
+            return self.libraries[name].get('enable')
+        print("WARNING: chekcing unknown lib name: " + name)
+        return None
+
     def enable_libraries(self):
         return list(filter(lambda libinfo: libinfo.get('enable') == True, self.libraries.values()))
+
     def add(self, name):
         repo = self.libraries[name].get('repo')
         if not repo: return
@@ -36,6 +46,12 @@ class LibraryManager:
         cfg = r.get_config()
         secs = list(cfg.sections())
         print(secs)
+
+    def apply_hooks(self):
+        for libinfo in self.libraries.values():
+            onhook = libinfo.get("onhook")
+            if onhook is not None:
+                ret = onhook(self, libinfo)
 
     def registers(self):
         self.useOpenGL()
@@ -114,6 +130,11 @@ class LibraryManager:
         ))
 
     def useSDL2(self):
+        def onhook(mgr, libinfo):
+            print("checking if imgui enabled, for sdl2")
+            if mgr.is_enabled("imgui"):
+                libinfo["sources"] = ['${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp']
+
         self.append(dict(
             name = "sdl2",
             include_dirs = ['${SDL2_SOURCE_DIR}/include'],
@@ -124,14 +145,12 @@ class LibraryManager:
             link_libs = ["SDL2-static"],
             options = [],
             path = "ext/sdl2",
-            sources = [
-                '${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp'
-            ],
             repo = dict(
                 url='https://github.com/libsdl-org/SDL.git',
                 path='ext/sdl2',
                 branch='release-2.28.5',
-            )
+            ),
+            onhook = onhook,
         ))
 
     def useOpenGL(self):

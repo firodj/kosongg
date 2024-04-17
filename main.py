@@ -19,20 +19,21 @@ headers = []
 others  = []
 
 libmgr = recipes.LibraryManager(project_path)
+jenv = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(current_path + "/templates")
+)
 
 def value_format(value):
     if type(value) is bool:
         return "ON" if value else "OFF"
     return '"' + value + '"'
 
+jenv.filters["value_format"] = value_format
+
 def createCMake():
     print(project_path, project_name)
 
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(current_path + "/templates")
-    )
-    env.filters["value_format"] = value_format
-    template = env.get_template("CMakeLists.txt.jinja")
+    template = jenv.get_template("CMakeLists.txt.jinja")
     libs = libmgr.enable_libraries()
 
     msvc = dict(
@@ -63,6 +64,35 @@ def createCMake():
 
     with open(os.path.join(project_path, 'CMakeLists.txt'), 'w') as f:
         f.write(contents)
+
+def createStarter():
+    cmakelists_path = os.path.join(project_path, 'CMakeLists.txt')
+    if os.path.exists(cmakelists_path): return
+
+    try:
+        os.makedirs(os.path.join(project_path, 'src'))
+    except FileExistsError as e:
+        print(e)
+
+    sources.append("src/MainApp.cpp")
+
+    mainapp_cpp_path = os.path.join(project_path, 'src/MainApp.cpp')
+    if not os.path.exists(mainapp_cpp_path):
+        template = jenv.get_template("MainApp.cpp.jinja")
+        contents = template.render()
+        with open(mainapp_cpp_path, 'w') as f:
+            f.write(contents)
+
+
+    mainapp_hpp_path = os.path.join(project_path, 'src/MainApp.hpp')
+    if not os.path.exists(mainapp_hpp_path):
+        template = jenv.get_template("MainApp.hpp.jinja")
+        contents = template.render()
+        with open(mainapp_hpp_path, 'w') as f:
+            f.write(contents)
+
+    headers.append("src/MainApp.hpp")
+
 
 def checkExt():
     for extpath in os.listdir(project_path + '/ext'):
@@ -106,7 +136,13 @@ def getExistingSources():
 
 def checkConfig():
     config = configparser.ConfigParser()
-    config.read(os.path.join(project_path, 'kosongg.ini'))
+    cfgpath = os.path.join(project_path, 'kosongg.ini')
+    if not os.path.exists(cfgpath):
+        template = jenv.get_template("kosongg.ini.jinja")
+        contents = template.render()
+        with open(cfgpath, 'w') as f:
+            f.write(contents)
+    config.read(cfgpath)
 
     adds = []
     for k in config['DEFAULT'].keys():
@@ -115,10 +151,12 @@ def checkConfig():
             adds.append(k)
     for k in adds:
         libmgr.add(k)
+    libmgr.apply_hooks()
 
 if __name__ == '__main__':
     checkConfig()
     getExistingSources()
+    createStarter()
     createCMake()
 
 # cd output/ext
