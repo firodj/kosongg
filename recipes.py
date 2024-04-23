@@ -69,6 +69,7 @@ class LibraryManager:
         self.usePeParse()
         self.useGoogleTest()
         self.useArgh()
+        self.useLibAssert()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -327,5 +328,19 @@ class LibraryManager:
                 url="https://github.com/adishavit/argh",
                 path="ext/argh",
                 branch="v1.3.2",
+            ),
+        ))
+
+    def useLibAssert(self):
+        self.append(dict(
+            name="libassert",
+            path="ext/libassert",
+            link_libs = [
+                "libassert::assert"
+            ],
+            repo=dict(
+                url="https://github.com/jeremy-rifkin/libassert.git",
+                path="ext/libassert",
+                branch="v2.0.1",
             ),
         ))

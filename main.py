@@ -113,6 +113,7 @@ def getExistingSources():
         with open(os.path.join(project_path, 'CMakeLists.txt'), 'r') as f:
             capture = None
             for line in f.readlines():
+                lineb4 = line.rstrip()
                 line = line.strip()
                 if line.startswith("## -- sources"):
                     capture = "sources"
@@ -129,7 +130,7 @@ def getExistingSources():
                         case "headers":
                             headers.append(line)
                         case "others":
-                            others.append(line)
+                            others.append(lineb4)
 
     except FileNotFoundError as e:
         print(e)

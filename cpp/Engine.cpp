@@ -83,7 +83,7 @@ void EngineBase::InitSDL() {
     int version = gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
     SDL_Log("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
-#ifdef WIN32
+#ifdef _WIN32
     //glEnable(GL_DEBUG_OUTPUT);
     //glDebugMessageCallback(OnGLMessageCallback, nullptr);
 #endif
