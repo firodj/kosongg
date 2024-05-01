@@ -11,6 +11,7 @@ private:
 protected:
     MainApp(/* dependency */);
     void RunImGui() override;
+    void ReadIniConfig();
 
 public:
     MainApp(MainApp &other) = delete;
@@ -18,4 +19,6 @@ public:
     void operator=(const MainApp &) = delete;
 
     static MainApp *GetInstance(/* dependency */);
+
+    void Init() override;
 };

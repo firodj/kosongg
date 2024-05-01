@@ -1,6 +1,9 @@
 #include "MainApp.hpp"
 #include <thread>
 #include <mutex>
+#include <iostream>
+#include "imgui.h"
+#include <kosongg/INIReader.h>
 
 static std::unique_ptr<MainApp> g_mainapp;
 
@@ -25,7 +28,6 @@ MainApp::MainApp(/* dependency */) {
 
 MainApp::~MainApp() {
 }
-
 
 void MainApp::RunImGui() {
   ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -56,4 +58,32 @@ void MainApp::RunImGui() {
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
   }
+}
+
+void MainApp::Init() {
+  ReadIniConfig();
+  EngineBase::Init();
+}
+
+void MainApp::ReadIniConfig() {
+  const char * homepath = nullptr;
+#ifdef _WIN32
+  homepath = std::getenv("USERPROFILE");
+#else
+  homepath = std::getenv("HOME");
+#endif
+
+  std::cout << "Home:" << homepath << std::endl;
+
+  const char * inifilename = "{{ project_name }}.ini";
+  INIReader reader(inifilename);
+
+  if (reader.ParseError() < 0) {
+    std::cout << "Can't load:" << inifilename << std::endl;
+    return;
+  }
+
+  std::set<std::string> sections = reader.Sections();
+  for (std::set<std::string>::iterator it = sections.begin(); it != sections.end(); ++it)
+    std::cout << "Section:" << *it << std::endl;
 }
