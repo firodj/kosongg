@@ -5,6 +5,7 @@
 namespace kosongg {
 
 void CheckGLError(const char *file, int line);
+
 void GLAPIENTRY OnGLMessageCallback(GLenum source,
   GLenum type,
   GLuint id,

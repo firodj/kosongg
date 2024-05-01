@@ -1,19 +1,20 @@
 #pragma once
 
-class MainApp {
-public:
-    ~MainApp();
+#include <memory>
+#include <kosongg/Engine.h>
+
+class MainApp: public kosongg::EngineBase {
+private:
+    struct MainAppImpl;
+    std::unique_ptr<MainAppImpl> impl_{};
 
 protected:
     MainApp(/* dependency */);
 
 public:
     MainApp(MainApp &other) = delete;
+    ~MainApp();
     void operator=(const MainApp &) = delete;
 
     static MainApp *GetInstance(/* dependency */);
-
-    void Init();
-    void Run();
-    void Clean();
 };

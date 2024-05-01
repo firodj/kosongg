@@ -72,7 +72,7 @@ def createStarter():
     try:
         os.makedirs(os.path.join(project_path, 'src'))
     except FileExistsError as e:
-        print(e)
+        print("DEBUG:", e)
 
     sources.append("src/MainApp.cpp")
 
@@ -93,20 +93,23 @@ def createStarter():
 
     headers.append("src/MainApp.hpp")
 
-
 def checkExt():
-    for extpath in os.listdir(project_path + '/ext'):
-        try:
-            r = Repo(project_path + '/ext/' + extpath)
+    ext_path = project_path + '/ext'
 
-            cfg = r.get_config()
-            secs = list(cfg.sections())
-            for s in secs:
-                print(s[0])
-                print(s, list(cfg.items(secs[1])))
-            print(cfg.get(("remote", "origin"), "url"))
-        except NotGitRepository as e:
-            print(extpath, e)
+    if not os.path.exists(ext_path):
+        os.mkdir(ext_path)
+
+    # for extpath in os.listdir(ext_path):
+    #     try:
+    #         r = Repo(ext_path + '/' + extpath)
+    #         cfg = r.get_config()
+    #         secs = list(cfg.sections())
+    #         for s in secs:
+    #             print(s[0])
+    #             print(s, list(cfg.items(secs[1])))
+    #         print(cfg.get(("remote", "origin"), "url"))
+    #     except NotGitRepository as e:
+    #         print(extpath, e)
 
 def getExistingSources():
     try:
@@ -155,6 +158,7 @@ def checkConfig():
     libmgr.apply_hooks()
 
 if __name__ == '__main__':
+    checkExt()
     checkConfig()
     getExistingSources()
     createStarter()

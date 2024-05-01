@@ -1,4 +1,4 @@
-#include "MainApp.h"
+#include "MainApp.hpp"
 
 #undef main
 

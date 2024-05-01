@@ -32,20 +32,33 @@ class LibraryManager:
         repo_path = self.project_path + '/' + repo['path']
 
         try:
-            print(repo)
+            print("Recipe:", repo)
             porcelain.clone(repo['url'], repo_path, depth=1, branch=repo['branch'])
         except FileExistsError as e:
-            print(e)
+            print("DEBUG:", e)
 
         r = Repo(repo_path)
-        print(r)
+        print("Repo:", r)
+
         refs = [k for k, v in r.get_refs().items() if v == r.head()]
         refs.append(r.head())
-        print(refs)
+        print("Refs:", refs)
 
-        cfg = r.get_config()
-        secs = list(cfg.sections())
-        print(secs)
+        branch_name = repo.get('branch').encode()
+        matched = None
+        chk = b'refs/heads/%s' % (branch_name,)
+        if chk in refs:
+            matched = chk
+        chk = b'refs/tags/%s' % (branch_name,)
+        if chk in refs:
+            matched = chk
+
+        if not matched:
+            porcelain.checkout_branch(r, branch_name)
+
+        # cfg = r.get_config()
+        # secs = list(cfg.sections())
+        # print("Git Sections:", secs)
 
     def apply_hooks(self):
         for libinfo in self.libraries.values():
@@ -149,7 +162,7 @@ class LibraryManager:
             repo = dict(
                 url='https://github.com/libsdl-org/SDL.git',
                 path='ext/sdl2',
-                branch='release-2.28.5',
+                branch='release-2.30.2',
             ),
             onhook = onhook,
         ))
@@ -235,7 +248,7 @@ class LibraryManager:
             repo = dict(
                 url='https://github.com/ocornut/imgui.git',
                 path='ext/imgui-docking',
-                branch='docking',
+                branch='v1.90.5-docking',
             )
         ))
 

@@ -10,6 +10,7 @@ class EngineBase {
 protected:
   SDL_Window *m_window;
   SDL_GLContext m_glcontext;
+  const char* windowTitle_;
   const char* m_glsl_version;
   bool m_show_demo_window;
   bool m_show_another_window;
@@ -23,15 +24,15 @@ protected:
   virtual void RunImGui();
 
 public:
-   EngineBase(/* dependency */);
+  EngineBase(/* dependency */);
   ~EngineBase();
 
   EngineBase(EngineBase &other) = delete;
   void operator=(const EngineBase &) = delete;
 
-  virtual void Init() = 0;
+  virtual void Init();
   void Run();
-  virtual void Clean() = 0;
+  virtual void Clean();
 };
 
 };
