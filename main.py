@@ -1,4 +1,5 @@
 import os
+import stat
 import jinja2
 import recipes
 import configparser
@@ -79,7 +80,7 @@ def createStarter():
     mainapp_cpp_path = os.path.join(project_path, 'src/MainApp.cpp')
     if not os.path.exists(mainapp_cpp_path):
         template = jenv.get_template("MainApp.cpp.jinja")
-        contents = template.render()
+        contents = template.render(project_name=project_name,)
         with open(mainapp_cpp_path, 'w') as f:
             f.write(contents)
 
@@ -92,6 +93,17 @@ def createStarter():
             f.write(contents)
 
     headers.append("src/MainApp.hpp")
+
+def checkRunPy():
+    run_py_path = os.path.join(project_path, 'run.py')
+    if not os.path.exists(run_py_path):
+        template = jenv.get_template("run.py.jinja")
+        contents = template.render(project_name=project_name,)
+        with open(run_py_path, 'w') as f:
+            f.write(contents)
+
+        st = os.stat(run_py_path)
+        os.chmod(run_py_path, st.st_mode | stat.S_IEXEC)
 
 def checkExt():
     ext_path = project_path + '/ext'
@@ -110,6 +122,29 @@ def checkExt():
     #         print(cfg.get(("remote", "origin"), "url"))
     #     except NotGitRepository as e:
     #         print(extpath, e)
+
+def checkGitIgnore():
+    try:
+        contents = ["build-*/", "*.dSYM/", "ext/",
+            project_name, project_name + ".exe",
+            project_name + "d", project_name + "d.exe"
+        ]
+
+        with open(os.path.join(project_path, '.gitignore'), 'r') as f:
+            for line in f.readlines():
+                line = line.strip()
+                if line.startswith("#"): continue
+
+                if line in contents:
+                    contents.remove(line)
+                    if len(contents) == 0: break
+
+        if len(contents) > 0:
+            with open(os.path.join(project_path, '.gitignore'), 'a') as f:
+                f.write("\n".join(contents))
+
+    except FileNotFoundError as e:
+        print("DEBUG:", e)
 
 def getExistingSources():
     try:
@@ -136,7 +171,7 @@ def getExistingSources():
                             others.append(lineb4)
 
     except FileNotFoundError as e:
-        print(e)
+        print("DEBUG:", e)
 
 def checkConfig():
     config = configparser.ConfigParser()
@@ -163,6 +198,8 @@ if __name__ == '__main__':
     getExistingSources()
     createStarter()
     createCMake()
+    checkRunPy()
+    checkGitIgnore()
 
 # cd output/ext
 # git clone --branch=mob --depth=1 git://repo.or.cz/tinycc.git

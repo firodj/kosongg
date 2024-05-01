@@ -20,6 +20,7 @@ MainApp *MainApp::GetInstance(/* dependency */) {
 
 MainApp::MainApp(/* dependency */) {
   impl_ = std::make_unique<MainAppImpl>();
+  windowTitle_ = "{{ project_name }}";
 }
 
 MainApp::~MainApp() {
