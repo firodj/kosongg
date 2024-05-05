@@ -20,7 +20,7 @@
 namespace kosongg {
 
 EngineBase::EngineBase(/* dependency */) {
-  windowTitle_ = "My SDL Empty Window";
+  m_windowTitle = "My SDL Empty Window";
 }
 
 EngineBase::~EngineBase() {}
@@ -33,21 +33,21 @@ void EngineBase::InitSDL() {
 // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
   // GL ES 2.0 + GLSL 100
-  glslVersionStr_ = "#version 100";
+  m_glslVersionStr = "#version 100";
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #elif defined(__APPLE__)
   // GL 3.2 Core + GLSL 150
-  glslVersionStr_ = "#version 150";
+  m_glslVersionStr = "#version 150";
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #else
   // OpenGL 3.3
-  glslVersionStr_ = "#version 130";
+  m_glslVersionStr = "#version 130";
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -64,24 +64,24 @@ void EngineBase::InitSDL() {
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
   SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-  windowWidth_ = 1280;
-  windowHeight_ = 720;
-  sdlWindow_ = SDL_CreateWindow(windowTitle_,
-    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth_, windowHeight_, window_flags);
+  m_windowWidth = 1280;
+  m_windowHeight = 720;
+  m_sdlWindow = SDL_CreateWindow(m_windowTitle,
+    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_windowWidth, m_windowHeight, window_flags);
 
-  if (sdlWindow_ == nullptr) {
+  if (m_sdlWindow == nullptr) {
     printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
   }
 
-  glContext_ = SDL_GL_CreateContext(sdlWindow_);
-  if (glContext_ == nullptr) {
+  m_glContext = SDL_GL_CreateContext(m_sdlWindow);
+  if (m_glContext == nullptr) {
     printf("Error: SDL_GL_CreateContext(): %s\n", SDL_GetError());
   }
-  SDL_GL_MakeCurrent(sdlWindow_, glContext_);
+  SDL_GL_MakeCurrent(m_sdlWindow, m_glContext);
   SDL_GL_SetSwapInterval(1); // Enable vsync
-  SDL_GL_GetDrawableSize(sdlWindow_, &screenWidth_, &screenHeight_);
-  hidpiX_ = (float)screenWidth_ / windowWidth_;
-  hidpiY_ = (float)screenHeight_ / windowHeight_;
+  SDL_GL_GetDrawableSize(m_sdlWindow, &m_screenWidth, &m_screenHeight);
+  m_hidpiX = (float)m_screenWidth / m_windowWidth;
+  m_hidpiY = (float)m_screenHeight / m_windowHeight;
 
   int version = gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
   SDL_Log("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
@@ -117,8 +117,8 @@ void EngineBase::InitImGui() {
   }
 
   // Setup Platform/Renderer backends
-  ImGui_ImplSDL2_InitForOpenGL(sdlWindow_, glContext_);
-  ImGui_ImplOpenGL3_Init(glslVersionStr_);
+  ImGui_ImplSDL2_InitForOpenGL(m_sdlWindow, m_glContext);
+  ImGui_ImplOpenGL3_Init(m_glslVersionStr);
 
   // Load Fonts
   // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -133,7 +133,7 @@ void EngineBase::InitImGui() {
   ImFontConfig config;
   //config.OversampleH = 2;
   //config.OversampleV = 2;
-  config.RasterizerDensity = hidpiX_;    // 2.0f for retina-display
+  config.RasterizerDensity = m_hidpiX;    // 2.0f for retina-display
   //config.GlyphExtraSpacing.x = -0.5f;
   ImFont* font = io.Fonts->AddFontFromFileTTF("kosongg/fonts/selawkl.ttf", 18.0f, &config);
   //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/SF-Pro-Text-Regular.otf", 14.0f, &config);
@@ -145,20 +145,20 @@ void EngineBase::InitImGui() {
   //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
   IM_ASSERT(font != nullptr);
 
-  showDemoWindow_ = true;
-  showAnotherWindow_ = false;
-  clearColor_ = IM_COL32(255,255,255,255); // ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+  m_showDemoWindow = true;
+  m_showAnotherWindow = false;
+  m_clearColor = IM_COL32(255,255,255,255); // ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 }
 
 void EngineBase::RunImGui() {
   // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-  if (showDemoWindow_)
-    ImGui::ShowDemoWindow(&showDemoWindow_);
+  if (m_showDemoWindow)
+    ImGui::ShowDemoWindow(&m_showDemoWindow);
 
   // 3. Show another simple window.
-  if (showAnotherWindow_)
+  if (m_showAnotherWindow)
   {
-    ImGui::Begin("Another Window", &showAnotherWindow_);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+    ImGui::Begin("Another Window", &m_showAnotherWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
     ImGui::Text("Hello from another window!");
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
@@ -166,7 +166,7 @@ void EngineBase::RunImGui() {
     ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor(0x00, 0x7A, 0xFF));
     ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(1.0f, 1.0f, 1.0f));
     if (ImGui::ColoredButtonV1("Close Me"))
-        showAnotherWindow_ = false;
+        m_showAnotherWindow = false;
     if (ImGui::IsItemHovered()) {
         ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
     }
@@ -179,10 +179,10 @@ void EngineBase::RunImGui() {
 }
 
 void EngineBase::Run() {
-  SDL_GL_MakeCurrent(sdlWindow_, glContext_);
+  SDL_GL_MakeCurrent(m_sdlWindow, m_glContext);
 
   ImGuiIO& io = ImGui::GetIO(); (void)io;
-  ImColor clear_color(clearColor_);
+  ImColor clear_color(m_clearColor);
 
   // Main loop
   bool done = false;
@@ -199,7 +199,7 @@ void EngineBase::Run() {
       ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
           done = true;
-      if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(sdlWindow_))
+      if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(m_sdlWindow))
           done = true;
     }
 
@@ -233,7 +233,7 @@ void EngineBase::Run() {
       SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
     }
 
-    SDL_GL_SwapWindow(sdlWindow_);
+    SDL_GL_SwapWindow(m_sdlWindow);
   }
 
   // Cleanup
@@ -241,8 +241,8 @@ void EngineBase::Run() {
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
-  SDL_GL_DeleteContext(glContext_);
-  SDL_DestroyWindow(sdlWindow_);
+  SDL_GL_DeleteContext(m_glContext);
+  SDL_DestroyWindow(m_sdlWindow);
   SDL_Quit();
 }
 

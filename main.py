@@ -192,6 +192,17 @@ def checkConfig():
         libmgr.add(k)
     libmgr.apply_hooks()
 
+def checkVscode():
+    vscode_path = os.path.join(project_path, '.vscode')
+    cprop_path = os.path.join(vscode_path, 'c_cpp_properties.json')
+    if os.path.exists(cprop_path): return
+    if not os.path.exists(vscode_path):
+        os.mkdir(vscode_path)
+    template = jenv.get_template("c_cpp_properties.json.jinja")
+    contents = template.render()
+    with open(cprop_path, 'w') as f:
+        f.write(contents)
+
 if __name__ == '__main__':
     checkExt()
     checkConfig()
@@ -200,6 +211,7 @@ if __name__ == '__main__':
     createCMake()
     checkRunPy()
     checkGitIgnore()
+    checkVscode()
 
 # cd output/ext
 # git clone --branch=mob --depth=1 git://repo.or.cz/tinycc.git

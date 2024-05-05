@@ -6,7 +6,7 @@
 class MainApp: public kosongg::EngineBase {
 private:
     struct MainAppImpl;
-    std::unique_ptr<MainAppImpl> impl_{};
+    std::unique_ptr<MainAppImpl> m_impl{};
 
 protected:
     MainApp(/* dependency */);

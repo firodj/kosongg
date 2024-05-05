@@ -21,9 +21,9 @@ MainApp *MainApp::GetInstance(/* dependency */) {
   return g_mainapp.get();
 }
 
-MainApp::MainApp(/* dependency */) {
-  impl_ = std::make_unique<MainAppImpl>();
-  windowTitle_ = "{{ project_name }}";
+MainApp::MainApp(/* dependency */): kosongg::EngineBase(/* dependency */) {
+  m_impl = std::make_unique<MainAppImpl>();
+  m_windowTitle = "{{ project_name }}";
 }
 
 MainApp::~MainApp() {

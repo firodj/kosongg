@@ -8,16 +8,19 @@ namespace kosongg {
 class EngineBase {
 
 protected:
-  SDL_Window *sdlWindow_;
-  SDL_GLContext glContext_;
-  const char* windowTitle_;
-  const char* glslVersionStr_;
-  bool showDemoWindow_;
-  bool showAnotherWindow_;
-  unsigned int clearColor_;
-  float hidpiX_, hidpiY_;
-  int windowWidth_, windowHeight_;
-  int screenWidth_, screenHeight_;
+  SDL_Window *  m_sdlWindow;
+  SDL_GLContext m_glContext;
+  const char *  m_windowTitle;
+  const char *  m_glslVersionStr;
+  bool          m_showDemoWindow;
+  bool          m_showAnotherWindow;
+  unsigned int  m_clearColor;
+  float         m_hidpiX;
+  float         m_hidpiY;
+  int           m_windowWidth;
+  int           m_windowHeight;
+  int           m_screenWidth;
+  int           m_screenHeight;
 
   void InitSDL();
   void InitImGui();
