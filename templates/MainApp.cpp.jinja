@@ -7,22 +7,22 @@
 
 static std::unique_ptr<MainApp> g_mainapp;
 
-static std::mutex g_mainapp_mutex;
+static std::mutex g_mtxMainapp;
 
-struct MainApp::MainAppImpl {
+struct MainApp::Impl {
   /* private implementations */
 };
 
 MainApp *MainApp::GetInstance(/* dependency */) {
-  std::lock_guard<std::mutex> lock(g_mainapp_mutex);
+  std::lock_guard<std::mutex> lock(g_mtxMainapp);
   if (g_mainapp == nullptr) {
-    g_mainapp = std::unique_ptr<MainApp>(new MainApp(/* dependency */));
+    g_mainapp = std::make_unique<MainApp>(/* dependency */);
   }
   return g_mainapp.get();
 }
 
 MainApp::MainApp(/* dependency */): kosongg::EngineBase(/* dependency */) {
-  m_impl = std::make_unique<MainAppImpl>();
+  m_impl = std::make_unique<Impl>();
   m_windowTitle = "{{ project_name }}";
 }
 
@@ -31,7 +31,7 @@ MainApp::~MainApp() {
 
 void MainApp::RunImGui() {
   ImGuiIO& io = ImGui::GetIO(); (void)io;
-  ImColor clear_color(clearColor_);
+  ImColor clearColor(m_clearColor);
 
   // 1. Show the big demo window and another window
   EngineBase::RunImGui();
@@ -44,11 +44,11 @@ void MainApp::RunImGui() {
     ImGui::Begin("Welcome to {{ project_name }}!");        // Create a window called "Hello, world!" and append into it.
 
     ImGui::Text("This is some useful text.");              // Display some text (you can use a format strings too)
-    ImGui::Checkbox("Demo Window", &showDemoWindow_);      // Edit bools storing our window open/close state
-    ImGui::Checkbox("Another Window", &showAnotherWindow_);
+    ImGui::Checkbox("Demo Window", &m_showDemoWindow);      // Edit bools storing our window open/close state
+    ImGui::Checkbox("Another Window", &m_showAnotherWindow);
 
     ImGui::SliderFloat("float", &f, 0.0f, 1.0f);           // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clear_color.Value); // Edit 3 floats representing a color
+    ImGui::ColorEdit3("clear color", (float*)&clearColor.Value); // Edit 3 floats representing a color
 
     if (ImGui::Button("Button"))                           // Buttons return true when clicked (most widgets return true when edited/activated)
         counter++;

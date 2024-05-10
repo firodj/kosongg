@@ -138,13 +138,12 @@ def checkGitIgnore():
                 if line in contents:
                     contents.remove(line)
                     if len(contents) == 0: break
-
-        if len(contents) > 0:
-            with open(os.path.join(project_path, '.gitignore'), 'a') as f:
-                f.write("\n".join(contents))
-
     except FileNotFoundError as e:
         print("DEBUG:", e)
+
+    if len(contents) > 0:
+        with open(os.path.join(project_path, '.gitignore'), 'a') as f:
+            f.write("\n".join(contents))
 
 def getExistingSources():
     try:
