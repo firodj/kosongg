@@ -16,6 +16,7 @@ struct MainApp::Impl {
 MainApp *MainApp::GetInstance(/* dependency */) {
   std::lock_guard<std::mutex> lock(g_mtxMainapp);
   if (g_mainapp == nullptr) {
+    struct MkUniqEnablr : public MainApp {};
     g_mainapp = std::make_unique<MainApp>(/* dependency */);
   }
   return g_mainapp.get();
