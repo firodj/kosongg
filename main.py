@@ -193,14 +193,22 @@ def checkConfig():
 
 def checkVscode():
     vscode_path = os.path.join(project_path, '.vscode')
-    cprop_path = os.path.join(vscode_path, 'c_cpp_properties.json')
-    if os.path.exists(cprop_path): return
     if not os.path.exists(vscode_path):
         os.mkdir(vscode_path)
-    template = jenv.get_template("c_cpp_properties.json.jinja")
-    contents = template.render()
-    with open(cprop_path, 'w') as f:
-        f.write(contents)
+
+    cprop_path = os.path.join(vscode_path, 'c_cpp_properties.json')
+    if not os.path.exists(cprop_path):
+        template = jenv.get_template("c_cpp_properties.json.jinja")
+        contents = template.render(project_name=project_name)
+        with open(cprop_path, 'w') as f:
+            f.write(contents)
+
+    launch_path = os.path.join(vscode_path, 'launch.json')
+    if not os.path.exists(launch_path):
+        template = jenv.get_template("launch.json.jinja")
+        contents = template.render(project_name=project_name)
+        with open(launch_path, 'w') as f:
+            f.write(contents)
 
 if __name__ == '__main__':
     checkExt()
