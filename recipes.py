@@ -83,6 +83,7 @@ class LibraryManager:
         self.useGoogleTest()
         self.useArgh()
         self.useLibAssert()
+        self.useJdksMidi()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -355,5 +356,19 @@ class LibraryManager:
                 url="https://github.com/jeremy-rifkin/libassert.git",
                 path="ext/libassert",
                 branch="v2.0.1",
+            ),
+        ))
+
+    def useJdksMidi(self):
+        self.append(dict(
+            name="jdksmidi",
+            path="ext/jdksmidi",
+            link_libs = [
+                "jdksmidi"
+            ],
+            repo=dict(
+                url="https://github.com/firodj/jdksmidi.git",
+                path="ext/jdksmidi",
+                branch="dev",
             ),
         ))
