@@ -84,6 +84,7 @@ class LibraryManager:
         self.useArgh()
         self.useLibAssert()
         self.useJdksMidi()
+        self.useTinySoundFont()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -370,5 +371,19 @@ class LibraryManager:
                 url="https://github.com/firodj/jdksmidi.git",
                 path="ext/jdksmidi",
                 branch="dev",
+            ),
+        ))
+
+    def useTinySoundFont(self):
+        self.append(dict(
+            name="tsf",
+            sets = [
+                dict(name="TSF_SOURCES_DIR", value='${PROJECT_SOURCE_DIR}/ext/tsf')
+            ],
+            include_dirs=['${TSF_SOURCES_DIR}'],
+            repo=dict(
+                url="https://github.com/firodj/tsf",
+                path="ext/tsf",
+                branch="v0.1.1",
             ),
         ))
