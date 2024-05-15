@@ -377,13 +377,10 @@ class LibraryManager:
     def useTinySoundFont(self):
         self.append(dict(
             name="tsf",
-            sets = [
-                dict(name="TSF_SOURCES_DIR", value='${PROJECT_SOURCE_DIR}/ext/tsf')
-            ],
-            include_dirs=['${TSF_SOURCES_DIR}'],
+            path="ext/tsf",
             repo=dict(
                 url="https://github.com/firodj/tsf",
                 path="ext/tsf",
-                branch="v0.1.1",
+                branch="dev",
             ),
         ))
