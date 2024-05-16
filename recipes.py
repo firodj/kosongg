@@ -158,6 +158,7 @@ class LibraryManager:
                 dict(name="SDL_TEST", value=False),
                 dict(name="SDL2_DISABLE_SDL2MAIN", value=True)
             ],
+            defs = ["SDL_MAIN_HANDLED"],
             link_libs = ["SDL2-static"],
             options = [],
             path = "ext/sdl2",
@@ -279,7 +280,7 @@ class LibraryManager:
             link_libs = [
                 "enet"
             ],
-            defs = ["-DDPLAY_ENET"],
+            defs = ["DPLAY_ENET"],
             repo=dict(
                 url="https://github.com/lsalzman/enet.git",
                 path="ext/enet",
@@ -287,7 +288,7 @@ class LibraryManager:
             ),
             msvc = dict(
                 link_libs = ["winmm", "ws2_32"],
-                defs = ["-D_WINSOCKAPI_"]
+                defs = ["_WINSOCKAPI_"]
             )
         ))
 

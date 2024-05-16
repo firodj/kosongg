@@ -96,8 +96,7 @@ if (MSVC)
 {%- endif %}
 
   # Silence MSVC CRT security warnings
-  target_compile_definitions({{ project_name }} PUBLIC
-    -D_CRT_SECURE_NO_WARNINGS
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS
 {% for def in msvc.defs if msvc.defs %}
     {{ def }}
 {%- endfor %}
@@ -125,7 +124,7 @@ else()
   endif()
 endif()
 
-target_compile_definitions({{ project_name }} PUBLIC -D_USE_
+add_compile_definitions(_USE_
 {%- for lib in libraries -%}
 {% for def in lib.defs if lib.defs %}
   {{ def }}
