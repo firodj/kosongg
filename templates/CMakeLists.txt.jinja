@@ -86,6 +86,28 @@ add_executable({{ project_name }}
 source_group("Source Files" FILES ${SOURCE})
 source_group("Header Files" FILES ${HEADERS})
 
+# ImFileDialog (ifd)
+list(APPEND ifd_SOURCES
+  ${VENDOR_DIR}/ifd/ImFileDialog.cpp
+  ${VENDOR_DIR}/ifd/ImFileDialog.hpp
+)
+
+if (APPLE)
+  list(APPEND ifd_SOURCES
+    ${VENDOR_DIR}/ifd/ImFileDialog_osx.mm
+    ${VENDOR_DIR}/ifd/ImFileDialog_osx.hpp
+  )
+endif()
+
+add_library(ifd STATIC ${ifd_SOURCES})
+
+if (APPLE)
+  # Cocoa
+  find_library(COCOA_LIBRARY Cocoa)
+  find_library(APPKIT_LIB AppKit)
+  target_link_libraries(ifd PUBLIC ${COCOA_LIBRARY} ${APPKIT_LIB})
+endif()
+
 if (MSVC)
 {%- if msvc.link_libs %}
   target_link_libraries({{ project_name }}
@@ -138,6 +160,7 @@ target_link_libraries({{ project_name }}
   {{ libname }}
 {%- endfor %}
 {%- endfor %}
+  ifd
 )
 
 set_target_properties({{ project_name }} PROPERTIES
