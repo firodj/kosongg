@@ -21,12 +21,15 @@ namespace kosongg {
 
 EngineBase::EngineBase(/* dependency */) {
   m_windowTitle = "My SDL Empty Window";
+  m_showDemoWindow = true;
+  m_showAnotherWindow = false;
+  m_clearColor = IM_COL32(255,255,255,255); // ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 }
 
 EngineBase::~EngineBase() {}
 
 void EngineBase::InitSDL() {
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) != 0) {
     printf("Error: %s\n", SDL_GetError());
     return;
   }
@@ -157,10 +160,6 @@ void EngineBase::InitImGui() {
   ImFont* fa_font = io.Fonts->AddFontFromFileTTF( "kosongg/fonts/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icons_config, icons_ranges );
   // use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
   IM_ASSERT(fa_font != nullptr);
-
-  m_showDemoWindow = true;
-  m_showAnotherWindow = false;
-  m_clearColor = IM_COL32(255,255,255,255); // ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 }
 
 void EngineBase::RunImGui() {
