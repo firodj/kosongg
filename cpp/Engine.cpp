@@ -16,7 +16,7 @@
 #include "kosongg/Engine.h"
 #include "kosongg/Component.h"
 #include "kosongg/GLUtil.h"
-
+#include "kosongg/IconsFontAwesome6.h"
 namespace kosongg {
 
 EngineBase::EngineBase(/* dependency */) {
@@ -129,6 +129,8 @@ void EngineBase::InitImGui() {
   // - Read 'docs/FONTS.md' for more instructions and details.
   // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
   //io.Fonts->AddFontDefault();
+  float baseFontSize = 18.0f;
+  float iconFontSize = baseFontSize * 4.0f / 5.0f; // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
 
   ImFontConfig config;
   //config.OversampleH = 2;
@@ -144,6 +146,17 @@ void EngineBase::InitImGui() {
   //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
   //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
   IM_ASSERT(font != nullptr);
+
+  // merge in icons from Font Awesome
+  static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+  ImFontConfig icons_config;
+  icons_config.MergeMode = true;
+  icons_config.PixelSnapH = true;
+  icons_config.RasterizerDensity = m_hidpiX;    // 2.0f for retina-display
+  icons_config.GlyphMinAdvanceX = iconFontSize;
+  ImFont* fa_font = io.Fonts->AddFontFromFileTTF( "kosongg/fonts/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icons_config, icons_ranges );
+  // use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
+  IM_ASSERT(fa_font != nullptr);
 
   m_showDemoWindow = true;
   m_showAnotherWindow = false;
