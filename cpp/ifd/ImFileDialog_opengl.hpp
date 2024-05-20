@@ -14,7 +14,7 @@ void * openglCreateTexture(uint8_t* data, int w, int h, char fmt) {
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    return (void*)tex;
+    return (void*)((uintptr_t)tex);
 };
 
 void openglDeleteTexture(void* tex) {
