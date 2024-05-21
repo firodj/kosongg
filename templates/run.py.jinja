@@ -33,7 +33,9 @@ if not os.path.exists(build_path):
 if not os.path.exists(os.path.join(build_path, "CMakeCache.txt")):
   subprocess.run("cmake -S . -B %s -G \"%s\"" % (build_name, generator_name), shell=True, check=True)
 
-subprocess.run("cmake --build %s --target \"%s\" --config %s" % (build_name, target, build_mode), shell=True, check=True)
+shellcmd = "cmake --build %s --target \"%s\" --config %s" % (build_name, target, build_mode)
+print(shellcmd)
+subprocess.run(shellcmd, shell=True, check=True)
 
 shellcmd = "./%s" % (executable,)
 if os.name == 'nt':
