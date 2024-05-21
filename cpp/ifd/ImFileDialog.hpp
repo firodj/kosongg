@@ -52,24 +52,24 @@ namespace ifd {
 
     class FileTreeNode {
     public:
-#ifdef _WIN32
-      FileTreeNode(const std::wstring& path) {
-        Path = std::filesystem::path(path);
+      FileTreeNode() {
         Read = false;
         Special = false;
       }
+#ifdef _WIN32
+      FileTreeNode(const std::wstring& path): FileTreeNode() {
+        Path = std::filesystem::path(path);
+      }
 #endif
-
-      FileTreeNode(const std::string& path) {
+      FileTreeNode(const std::string& path): FileTreeNode() {
         Path = std::filesystem::u8path(path);
-        Read = false;
-        Special = false;
       }
 
       std::filesystem::path Path;
       bool Read;
       std::vector<FileTreeNode*> Children;
       bool Special;
+      std::string DisplayName;
     };
     class FileData {
     public:

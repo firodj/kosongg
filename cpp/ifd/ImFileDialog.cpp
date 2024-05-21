@@ -10,7 +10,11 @@
 #ifdef __APPLE__
 #include "ImFileDialog_osx.hpp"
 #endif
+#ifdef WIN32
+#include "ImFileDialog_win32.hpp"
+#endif
 
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <sys/stat.h>
@@ -25,14 +29,13 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <lmcons.h>
-#pragma comment(lib, "Shell32.lib")
 #else
 #include <unistd.h>
 #include <pwd.h>
 #endif
 
 #define ICON_SIZE ImGui::GetFont()->FontSize + 3
-#define GUI_ELEMENT_SIZE std::max(GImGui->FontSize + 10.f, 24.f)
+#define GUI_ELEMENT_SIZE max(GImGui->FontSize + 10.f, 24.f)
 #define DEFAULT_ICON_SIZE 32
 #define PI 3.141592f
 
@@ -57,13 +60,15 @@ namespace ifd {
   static const char* GetDefaultFileIcon();
 
   bool IsHidden(const std::filesystem::path &entry_path) {
-    const std::string& filename = entry_path.filename().string();
-    #if defined(_WIN32)
-      const bool& is_hidden = ((GetFileAttributesW(entry_path.wstring().c_str()) & FILE_ATTRIBUTE_HIDDEN) ||
-        (GetFileAttributesW(entry_path.wstring().c_str()) & FILE_ATTRIBUTE_SYSTEM) || ((!filename.empty()) ? (filename[0] == '.') : true));
-    #else
+#if defined(_WIN32)
+      const bool& is_hidden =
+       ((GetFileAttributesW(entry_path.wstring().c_str()) & FILE_ATTRIBUTE_HIDDEN) ||
+        (GetFileAttributesW(entry_path.wstring().c_str()) & FILE_ATTRIBUTE_SYSTEM) ||
+        ((!entry_path.filename().empty()) ? (entry_path.filename().wstring()[0] == L'.') : true));
+#else
+      const std::string& filename = entry_path.filename().string();
       const bool& is_hidden = ((!filename.empty()) ? (filename[0] == '.') : true);
-    #endif
+#endif
      return is_hidden;
   }
 
@@ -431,18 +436,53 @@ namespace ifd {
     FileTreeNode* thisPC = new FileTreeNode("This PC");
     thisPC->Read = true;
     thisPC->Special = true;
-    if (std::filesystem::exists(userPath + L"3D Objects"))
-      thisPC->Children.push_back(new FileTreeNode(userPath + L"3D Objects"));
-    thisPC->Children.push_back(new FileTreeNode(userPath + L"Desktop"));
-    thisPC->Children.push_back(new FileTreeNode(userPath + L"Documents"));
-    thisPC->Children.push_back(new FileTreeNode(userPath + L"Downloads"));
-    thisPC->Children.push_back(new FileTreeNode(userPath + L"Music"));
-    thisPC->Children.push_back(new FileTreeNode(userPath + L"Pictures"));
-    thisPC->Children.push_back(new FileTreeNode(userPath + L"Videos"));
+
+#if 0
+    auto userProfile = userPath;
+    if (const wchar_t * envUserProfile = WinGetEnv(L"USERPROFILE")) {
+      userProfile = envUserProfile; userProfile += L"\\";
+    }
+#endif
+
+    SpecialFolders specialFolders;
+    WinGetSpecialFolder(specialFolders);
+
+    if (!specialFolders.Desktop.empty())
+      thisPC->Children.push_back(new FileTreeNode(specialFolders.Desktop));
+    if (!specialFolders.MyDocuments.empty())
+      thisPC->Children.push_back(new FileTreeNode(specialFolders.MyDocuments));
+    if (!specialFolders.MyPictures.empty())
+      thisPC->Children.push_back(new FileTreeNode(specialFolders.MyPictures));
+    if (!specialFolders.MyMusic.empty())
+      thisPC->Children.push_back(new FileTreeNode(specialFolders.MyMusic));
+    if (!specialFolders.MyVideo.empty())
+      thisPC->Children.push_back(new FileTreeNode(specialFolders.MyVideo));
+
     DWORD d = GetLogicalDrives();
     for (int i = 0; i < 26; i++)
-      if (d & (1 << i))
-        thisPC->Children.push_back(new FileTreeNode(std::string(1, 'A' + i) + ":"));
+      if (d & (1 << i)) {
+        std::string drvPath = std::string(1, 'A' + i) + ":\\";
+        FileTreeNode *logicalDrive = new FileTreeNode(drvPath);
+#ifdef WIN32
+        {
+          WCHAR szVolumeName[MAX_PATH];
+          auto drvPathW = utf8_to_wstring(drvPath);
+          BOOL bSucceeded = GetVolumeInformationW(drvPathW.c_str(),
+                                                  szVolumeName,
+                                                  MAX_PATH,
+                                                  NULL,
+                                                  NULL,
+                                                  NULL,
+                                                  NULL,
+                                                  0);
+          if (bSucceeded) {
+            logicalDrive->DisplayName = wstring_to_utf8(szVolumeName);
+            logicalDrive->DisplayName += " (" + drvPath + ")";
+          }
+        }
+#endif
+        thisPC->Children.push_back(logicalDrive);
+      }
     m_treeCache.push_back(thisPC);
 #elif defined(__APPLE__)
     std::string homePath = std::getenv("HOME");
@@ -790,57 +830,23 @@ namespace ifd {
 
     std::string pathU8 = path.u8string();
 
-    std::error_code ec;
     m_icons[pathU8] = nullptr;
 
-    DWORD attrs = 0;
-    UINT flags = SHGFI_ICON | SHGFI_LARGEICON;
-    if (!std::filesystem::exists(path, ec)) {
-      flags |= SHGFI_USEFILEATTRIBUTES;
-      attrs = FILE_ATTRIBUTE_DIRECTORY;
-    }
+    ifd::FileInfoWin32 iconForFile(path);
 
-    SHFILEINFOW fileInfo = { 0 };
-    std::wstring pathW = path.wstring();
-    for (int i = 0; i < pathW.size(); i++)
-      if (pathW[i] == '/')
-        pathW[i] = '\\';
-    SHGetFileInfoW(pathW.c_str(), attrs, &fileInfo, sizeof(SHFILEINFOW), flags);
-
-    if (fileInfo.hIcon == nullptr)
-      return nullptr;
+    if (!iconForFile.HasIcon()) return nullptr;
 
     // check if icon is already loaded
-    auto itr = std::find(m_iconIndices.begin(), m_iconIndices.end(), fileInfo.iIcon);
+    auto itr = std::find(m_iconIndices.begin(), m_iconIndices.end(), iconForFile.GetINode());
     if (itr != m_iconIndices.end()) {
       const std::string& existingIconFilepath = m_iconFilepaths[itr - m_iconIndices.begin()];
       m_icons[pathU8] = m_icons[existingIconFilepath];
       return m_icons[pathU8];
     }
 
-    m_iconIndices.push_back(fileInfo.iIcon);
+    m_iconIndices.push_back(iconForFile.GetINode());
     m_iconFilepaths.push_back(pathU8);
-
-    ICONINFO iconInfo = { 0 };
-    GetIconInfo(fileInfo.hIcon, &iconInfo);
-
-    if (iconInfo.hbmColor == nullptr)
-      return nullptr;
-
-    DIBSECTION ds;
-    GetObject(iconInfo.hbmColor, sizeof(ds), &ds);
-    int byteSize = ds.dsBm.bmWidth * ds.dsBm.bmHeight * (ds.dsBm.bmBitsPixel / 8);
-
-    if (byteSize == 0)
-      return nullptr;
-
-    uint8_t* data = (uint8_t*)malloc(byteSize);
-    GetBitmapBits(iconInfo.hbmColor, byteSize, data);
-
-    m_icons[pathU8] = this->CreateTexture(data, ds.dsBm.bmWidth, ds.dsBm.bmHeight, 0);
-
-    free(data);
-
+    m_icons[pathU8] = iconForFile.GetIcon(this->CreateTexture);
     return m_icons[pathU8];
 #elif defined(__APPLE__)
     if (m_icons.count(path.u8string()) > 0)
@@ -1164,17 +1170,18 @@ namespace ifd {
     }
   }
 
-
   void FileDialog::m_renderTree(FileTreeNode* node)
   {
     // directory
     std::error_code ec;
     ImGui::PushID(node);
     bool isClicked = false;
-    std::string displayName = node->Path.stem().u8string();
-    bool isOpen = true;
+    std::string displayName = node->DisplayName.empty() ? node->Path.stem().u8string() : node->DisplayName;
     if (displayName.size() == 0)
       displayName = node->Path.u8string();
+
+    bool isOpen = true;
+
     if (FolderNode(displayName.c_str(), (ImTextureID)m_getIcon(node->Path), isClicked, node->Special ? &isOpen : nullptr)) {
       if (!node->Read) {
         // cache children if it's not already cached
