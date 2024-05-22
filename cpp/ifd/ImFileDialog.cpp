@@ -35,7 +35,7 @@
 #endif
 
 #define ICON_SIZE ImGui::GetFont()->FontSize + 3
-#define GUI_ELEMENT_SIZE max(GImGui->FontSize + 10.f, 24.f)
+#define GUI_ELEMENT_SIZE ImMax(GImGui->FontSize + 10.f, 24.f)
 #define DEFAULT_ICON_SIZE 32
 #define PI 3.141592f
 
