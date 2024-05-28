@@ -3,7 +3,6 @@
 #endif
 
 #include "ImFileDialog_win32.hpp"
-#include "ImFileDialog_osx.hpp"
 #include <filesystem>
 #include <windows.h>
 #include <shellapi.h>
