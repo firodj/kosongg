@@ -50,6 +50,7 @@ set(SOURCE
   ${VENDOR_DIR}/Engine.cpp
   ${VENDOR_DIR}/GLUtil.cpp
   ${VENDOR_DIR}/Component.cpp
+  ${VENDOR_DIR}/UtfConv.c
 
 {%- for lib in libraries -%}
 {% for src in lib.sources if lib.sources %}
@@ -64,9 +65,10 @@ set(SOURCE
 )
 
 set(HEADERS
-  ${VENDOR_DIR}/kosongg/Component.h
   ${VENDOR_DIR}/kosongg/Engine.h
   ${VENDOR_DIR}/kosongg/GLUtil.h
+  ${VENDOR_DIR}/kosongg/Component.h
+  ${VENDOR_DIR}/kosongg/UtfConv.h
 ## -- headers --
 {%- for hdr in headers %}
   {{ hdr }}
