@@ -1031,7 +1031,7 @@ namespace ifd {
           if (!info.IsDirectory && m_type != IFD_DIALOG_DIRECTORY) {
             if (m_filterSelection < m_filterExtensions.size()) {
               const auto& exts = m_filterExtensions[m_filterSelection];
-              if (exts.size() > 0) {
+              if (exts.size() > 0 && info.Path.has_extension()) {
                 std::string extension = toLower(info.Path.extension().u8string());
                 printf("extension = %s\n", extension.c_str());
                 // extension not found? skip
@@ -1481,4 +1481,3 @@ namespace ifd {
       m_isOpen = false;
   }
 }
-
