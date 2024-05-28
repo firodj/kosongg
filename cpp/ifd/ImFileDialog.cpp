@@ -37,6 +37,8 @@
 #include <pwd.h>
 #endif
 
+#include "kosongg/UtfConv.h"
+
 #define ICON_SIZE ImGui::GetFont()->FontSize + 3
 #define GUI_ELEMENT_SIZE ImMax(GImGui->FontSize + 10.f, 24.f)
 #define DEFAULT_ICON_SIZE 32
@@ -916,6 +918,12 @@ namespace ifd {
       m_previewLoader = nullptr;
     }
   }
+  std::string toLower(std::string src) {
+    return std::string(
+      reinterpret_cast<const char*>(
+          Utf8StrMakeLwrUtf8Str(
+            reinterpret_cast<const unsigned char*>(src.c_str()))));
+  }
   void FileDialog::m_loadPreview()
   {
     for (size_t i = 0; m_previewLoaderRunning && i < m_content.size(); i++) {
@@ -925,7 +933,7 @@ namespace ifd {
         continue;
 
       if (data.Path.has_extension()) {
-        std::string ext = data.Path.extension().u8string();
+        std::string ext = toLower(data.Path.extension().u8string());
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga") {
           int width, height, nrChannels;
           unsigned char* image = stbi_load(data.Path.u8string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
@@ -1024,8 +1032,8 @@ namespace ifd {
             if (m_filterSelection < m_filterExtensions.size()) {
               const auto& exts = m_filterExtensions[m_filterSelection];
               if (exts.size() > 0) {
-                std::string extension = info.Path.extension().u8string();
-
+                std::string extension = toLower(info.Path.extension().u8string());
+                printf("extension = %s\n", extension.c_str());
                 // extension not found? skip
                 if (std::count(exts.begin(), exts.end(), extension) == 0)
                   continue;
