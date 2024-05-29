@@ -35,6 +35,15 @@ void ImGui::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int ver
     }
 }
 
+ImVec2 ImGui::CalcButtonSizeWithText(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width) {
+    ImGuiContext& g = *ImGui::GetCurrentContext();
+    const ImGuiStyle& style = g.Style;
+    ImVec2 label_size = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash);
+    label_size.x += style.FramePadding.x * 2.0f;
+    label_size.y += style.FramePadding.y * 2.0f;
+    return label_size;
+}
+
 #define COLORED_BUTTON_MODE 3
 
 // https://github.com/ocornut/imgui/issues/4722
