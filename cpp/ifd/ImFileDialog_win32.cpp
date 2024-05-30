@@ -51,6 +51,11 @@ struct FileInfoWin32::details {
 };
 
 FileInfoWin32::FileInfoWin32() {
+static bool inited = false;
+  if (!inited) {
+    inited = true;
+    CoInitialize(NULL);
+  }
   m_details = new details();
 }
 
@@ -70,6 +75,9 @@ FileInfoWin32::FileInfoWin32(const std::filesystem::path& path): FileInfoWin32()
       pathW[i] = '\\';
 
   SHGetFileInfoW(pathW.c_str(), attrs, &m_details->fileInfo, sizeof(SHFILEINFOW), flags);
+  // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
+  // If SHGetFileInfo returns an icon handle in the hIcon member of the SHFILEINFO structure pointed to by psfi,
+  // you are responsible for freeing it with DestroyIcon when you no longer need it.
 }
 
 FileInfoWin32::~FileInfoWin32() {
@@ -86,26 +94,33 @@ int FileInfoWin32::GetINode() {
 
 void * FileInfoWin32::GetIcon(std::function<void*(uint8_t*, int, int, char)> createTexture) {
   ICONINFO iconInfo = { 0 };
-  GetIconInfo(m_details->fileInfo.hIcon, &iconInfo);
+  if (m_details->fileInfo.hIcon) {
+    std::shared_ptr<void> _(nullptr, [&](...) {
+      DestroyIcon(m_details->fileInfo.hIcon);
+      m_details->fileInfo.hIcon = 0;
+    });
+    GetIconInfo(m_details->fileInfo.hIcon, &iconInfo);
 
-  if (iconInfo.hbmColor == nullptr)
-    return nullptr;
+    if (iconInfo.hbmColor == nullptr)
+      return nullptr;
 
-  DIBSECTION ds;
-  GetObject(iconInfo.hbmColor, sizeof(ds), &ds);
-  int byteSize = ds.dsBm.bmWidth * ds.dsBm.bmHeight * (ds.dsBm.bmBitsPixel / 8);
+    DIBSECTION ds;
+    GetObject(iconInfo.hbmColor, sizeof(ds), &ds);
+    int byteSize = ds.dsBm.bmWidth * ds.dsBm.bmHeight * (ds.dsBm.bmBitsPixel / 8);
 
-  if (byteSize == 0)
-    return nullptr;
+    if (byteSize == 0)
+      return nullptr;
 
-  uint8_t* data = new uint8_t[byteSize];
-  GetBitmapBits(iconInfo.hbmColor, byteSize, data);
+    uint8_t* data = new uint8_t[byteSize];
+    GetBitmapBits(iconInfo.hbmColor, byteSize, data);
 
-  void * icondata = createTexture(data, ds.dsBm.bmWidth, ds.dsBm.bmHeight, 0);
+    void * icondata = createTexture(data, ds.dsBm.bmWidth, ds.dsBm.bmHeight, 0);
 
-  delete []data;
+    delete []data;
 
-  return icondata;
+    return icondata;
+  }
+  return nullptr;
 }
 
 };
