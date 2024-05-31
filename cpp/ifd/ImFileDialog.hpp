@@ -3,6 +3,7 @@
 #include <stack>
 #include <string>
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <functional>
 #include <filesystem>
@@ -121,14 +122,23 @@ namespace ifd {
     void m_clearIcons();
     void m_doClearIcons();
     void m_refreshIconPreview();
+    void m_doRefreshIconPreview();
     void m_clearIconPreview();
+    void m_doClearIconPreview();
 
+    bool m_requestRefreshIconPreview{false};
     bool m_requestClearIcons{false};
+    bool m_requestClearIconPreview{false};
 
     std::thread* m_previewLoader;
     bool m_previewLoaderRunning;
+
+    std::thread* m_contentLoader;
+    bool m_contentLoaderRunning;
+
     void m_stopPreviewLoader();
-    void m_loadPreview();
+    void m_loadPreviewRun();
+    void m_stopContentLoader();
 
     std::vector<FileTreeNode*> m_treeCache;
     void m_clearTree(FileTreeNode* node);
@@ -137,9 +147,17 @@ namespace ifd {
     unsigned int m_sortColumn;
     unsigned int m_sortDirection;
     std::vector<FileData> m_content;
+
+    struct {
+      std::filesystem::path p;
+      bool addHistory{true};
+      bool requested{false};
+    } m_setDirectoryParam;
     void m_setDirectory(const std::filesystem::path& p, bool addHistory = true);
+    void m_doSetDirectory();
     void m_sortContent(unsigned int column, unsigned int sortDirection);
     void m_renderContent();
+    std::mutex m_mtxContent;
 
     void m_renderPopups();
     void m_renderFileDialog();

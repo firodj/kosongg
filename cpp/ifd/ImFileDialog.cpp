@@ -19,6 +19,7 @@
 #include "ImFileDialog_linux.hpp"
 #endif
 
+#include <chrono>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -410,6 +411,8 @@ namespace ifd {
 
     m_previewLoader = nullptr;
     m_previewLoaderRunning = false;
+    m_contentLoader = nullptr;
+    m_contentLoaderRunning = false;
 
     m_setDirectory(std::filesystem::current_path(), false);
 
@@ -566,6 +569,8 @@ namespace ifd {
   FileDialog::~FileDialog() {
     m_clearIconPreview();
     m_clearIcons();
+    m_stopContentLoader();
+    m_stopPreviewLoader();
 
     for (auto fn : m_treeCache)
       m_clearTree(fn);
@@ -658,6 +663,7 @@ namespace ifd {
     // free icon textures
     m_clearIconPreview();
     m_clearIcons();
+    m_stopContentLoader();
   }
 
   void FileDialog::RemoveFavorite(const std::string& path)
@@ -896,19 +902,39 @@ namespace ifd {
     m_iconIndices.clear();
     m_icons.clear();
   }
-  void FileDialog::m_refreshIconPreview()
+  void FileDialog::m_refreshIconPreview() {
+    m_requestRefreshIconPreview = true;
+  }
+  void FileDialog::m_doRefreshIconPreview()
   {
+    if (m_requestRefreshIconPreview) {
+      m_requestRefreshIconPreview = false;
+    } else return;
+
     if (m_zoom >= 5.0f) {
       if (m_previewLoader == nullptr) {
         m_previewLoaderRunning = true;
-        m_previewLoader = new std::thread(&FileDialog::m_loadPreview, this);
+        m_previewLoader = new std::thread(&FileDialog::m_loadPreviewRun, this);
       }
-    } else
+    } else {
       m_clearIconPreview();
+      m_doClearIconPreview();
+    }
   }
   void FileDialog::m_clearIconPreview()
   {
+    m_requestClearIconPreview = true;
+  }
+  void FileDialog::m_doClearIconPreview()
+  {
+    if (! m_requestClearIconPreview) return;
+
     m_stopPreviewLoader();
+
+    if (! m_mtxContent.try_lock()) return;
+    std::lock_guard<std::mutex> lock(m_mtxContent, std::adopt_lock);
+
+    m_requestClearIconPreview = false;
 
     for (auto& data : m_content) {
       if (!data.HasIconPreview)
@@ -941,8 +967,9 @@ namespace ifd {
           Utf8StrMakeLwrUtf8Str(
             reinterpret_cast<const unsigned char*>(src.c_str()))));
   }
-  void FileDialog::m_loadPreview()
+  void FileDialog::m_loadPreviewRun()
   {
+    std::lock_guard<std::mutex> lock(m_mtxContent);
     for (size_t i = 0; m_previewLoaderRunning && i < m_content.size(); i++) {
       auto& data = m_content[i];
 
@@ -968,6 +995,19 @@ namespace ifd {
 
     m_previewLoaderRunning = false;
   }
+  void FileDialog::m_stopContentLoader() {
+    if (m_contentLoader != nullptr) {
+      m_contentLoaderRunning = false;
+
+      if (m_contentLoader && m_contentLoader->joinable())
+        m_contentLoader->join();
+
+      delete m_contentLoader;
+      m_contentLoader = nullptr;
+
+      printf("contentLoader thread delete\n");
+    }
+  }
   void FileDialog::m_clearTree(FileTreeNode* node)
   {
     if (node == nullptr)
@@ -981,6 +1021,22 @@ namespace ifd {
   }
   void FileDialog::m_setDirectory(const std::filesystem::path& p, bool addHistory)
   {
+    m_setDirectoryParam.addHistory = addHistory;
+    m_setDirectoryParam.p = p;
+    m_setDirectoryParam.requested = true;
+  }
+  void FileDialog::m_doSetDirectory()
+  {
+    if (!m_setDirectoryParam.requested) return;
+    if (! m_mtxContent.try_lock()) return;
+    std::lock_guard<std::mutex> lock(m_mtxContent, std::adopt_lock);
+    m_setDirectoryParam.requested = false;
+
+    m_stopContentLoader();
+
+    std::filesystem::path p = m_setDirectoryParam.p;
+    bool addHistory = m_setDirectoryParam.addHistory;
+
     bool isSameDir = m_currentDirectory == p;
 
     if (addHistory && !isSameDir)
@@ -993,7 +1049,10 @@ namespace ifd {
       m_currentDirectory = std::filesystem::u8path(p.u8string() + "\\");
 #endif
 
+    bool shouldListDir = false;
     m_clearIconPreview();
+    m_doClearIconPreview();
+
     m_content.clear(); // p == "" after this line, due to reference
     m_selectedFileItem = -1;
 
@@ -1004,6 +1063,7 @@ namespace ifd {
     if (!isSameDir) {
       m_searchBuffer[0] = 0;
       m_clearIcons();
+      m_doClearIcons();
     }
 
     if (p.u8string() == "Quick Access") {
@@ -1019,50 +1079,77 @@ namespace ifd {
           for (auto& c : node->Children)
             m_content.push_back(FileData(c->Path));
       }
-    }
-    else {
+    } else
+      shouldListDir = true;
+
+
+    if (shouldListDir) {
       std::error_code ec;
-      if (std::filesystem::exists(m_currentDirectory, ec))
-        for (const auto& entry : std::filesystem::directory_iterator(m_currentDirectory, ec)) {
-          if (IsHidden(entry.path())) continue;
-          FileData info(entry.path());
 
-          // skip files when IFD_DIALOG_DIRECTORY
-          if (!info.IsDirectory && m_type == IFD_DIALOG_DIRECTORY)
-            continue;
+      if (std::filesystem::exists(m_currentDirectory, ec)) {
+        m_contentLoaderRunning = true;
+        m_contentLoader = new std::thread([&](...) {
+          std::lock_guard<std::mutex> lock(m_mtxContent);
+          std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
+          std::shared_ptr<void> _(nullptr, [&](...) {
+            m_contentLoaderRunning = false;
+          });
 
-          // check if filename matches search query
-          if (m_searchBuffer[0]) {
-            std::string filename = info.Path.u8string();
+          for (const auto& entry : std::filesystem::directory_iterator(m_currentDirectory, ec)) {
+            if (!m_contentLoaderRunning) {
+              break;
+            }
+            if (IsHidden(entry.path())) continue;
+            FileData info(entry.path());
 
-            std::string filenameSearch = filename;
-            std::string query(m_searchBuffer);
-            std::transform(filenameSearch.begin(), filenameSearch.end(), filenameSearch.begin(), ::tolower);
-            std::transform(query.begin(), query.end(), query.begin(), ::tolower);
-
-            if (filenameSearch.find(query, 0) == std::string::npos)
+            // skip files when IFD_DIALOG_DIRECTORY
+            if (!info.IsDirectory && m_type == IFD_DIALOG_DIRECTORY)
               continue;
-          }
 
-          // check if extension matches
-          if (!info.IsDirectory && m_type != IFD_DIALOG_DIRECTORY) {
-            if (m_filterSelection < m_filterExtensions.size()) {
-              const auto& exts = m_filterExtensions[m_filterSelection];
-              if (exts.size() > 0 && info.Path.has_extension()) {
-                std::string extension = toLower(info.Path.extension().u8string());
-                // extension not found? skip
-                if (std::count(exts.begin(), exts.end(), extension) == 0)
-                  continue;
+            // check if filename matches search query
+            if (m_searchBuffer[0]) {
+              std::string filename = info.Path.u8string();
+
+              std::string filenameSearch = filename;
+              std::string query(m_searchBuffer);
+              std::transform(filenameSearch.begin(), filenameSearch.end(), filenameSearch.begin(), ::tolower);
+              std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+
+              if (filenameSearch.find(query, 0) == std::string::npos)
+                continue;
+            }
+
+            // check if extension matches
+            if (!info.IsDirectory && m_type != IFD_DIALOG_DIRECTORY) {
+              if (m_filterSelection < m_filterExtensions.size()) {
+                const auto& exts = m_filterExtensions[m_filterSelection];
+                if (exts.size() > 0 && info.Path.has_extension()) {
+                  std::string extension = toLower(info.Path.extension().u8string());
+                  // extension not found? skip
+                  if (std::count(exts.begin(), exts.end(), extension) == 0)
+                    continue;
+                }
               }
             }
+
+            m_content.push_back(info);
           }
 
-          m_content.push_back(info);
-        }
-    }
+          std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
+          printf("total listing time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
 
-    m_sortContent(m_sortColumn, m_sortDirection);
-    m_refreshIconPreview();
+          if (!m_contentLoaderRunning) return;
+
+          start = stop;
+          m_sortContent(m_sortColumn, m_sortDirection);
+
+          stop = std::chrono::high_resolution_clock::now();
+          printf("total sorting time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
+
+          m_refreshIconPreview();
+        });
+      }
+    }
   }
   void FileDialog::m_sortContent(unsigned int column, unsigned int sortDirection)
   {
@@ -1180,61 +1267,71 @@ namespace ifd {
         if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs()) {
           if (sortSpecs->SpecsDirty) {
             sortSpecs->SpecsDirty = false;
-            m_sortContent(sortSpecs->Specs->ColumnUserID, sortSpecs->Specs->SortDirection);
+            if (m_mtxContent.try_lock()) {
+              std::lock_guard<std::mutex> lock(m_mtxContent, std::adopt_lock);
+              m_sortContent(sortSpecs->Specs->ColumnUserID, sortSpecs->Specs->SortDirection);
+            }
           }
         }
 
         // content
         int fileId = 0;
-        for (auto& entry : m_content) {
-          std::string filename = entry.Path.filename().u8string();
-          if (filename.size() == 0)
-            filename = entry.Path.u8string(); // drive
 
-          bool isSelected = std::count(m_selections.begin(), m_selections.end(), entry.Path);
+        if (m_mtxContent.try_lock()) {
+          std::lock_guard<std::mutex> lock(m_mtxContent, std::adopt_lock);
+          for (auto& entry : m_content) {
+            std::string filename = entry.Path.filename().u8string();
+            if (filename.size() == 0)
+              filename = entry.Path.u8string(); // drive
 
-          ImGui::TableNextRow();
+            bool isSelected = std::count(m_selections.begin(), m_selections.end(), entry.Path);
 
-          // file name
-          ImGui::TableSetColumnIndex(0);
-          ImGui::Image((ImTextureID)m_getIcon(entry.Path), ImVec2(ICON_SIZE, ICON_SIZE));
-          ImGui::SameLine();
-          if (ImGui::Selectable(filename.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
-            std::error_code ec;
-            bool isDir = std::filesystem::is_directory(entry.Path, ec);
+            ImGui::TableNextRow();
 
-            if (ImGui::IsMouseDoubleClicked(0)) {
-              if (isDir) {
-                m_setDirectory(entry.Path);
-                break;
-              } else
-                m_finalize(filename);
-            } else {
-              if ((isDir && m_type == IFD_DIALOG_DIRECTORY) || !isDir)
-                m_select(entry.Path, ImGui::GetIO().KeyCtrl);
+            // file name
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Image((ImTextureID)m_getIcon(entry.Path), ImVec2(ICON_SIZE, ICON_SIZE));
+            ImGui::SameLine();
+            if (ImGui::Selectable(filename.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+              std::error_code ec;
+              bool isDir = std::filesystem::is_directory(entry.Path, ec);
+
+              if (ImGui::IsMouseDoubleClicked(0)) {
+                if (isDir) {
+                  m_setDirectory(entry.Path);
+                  break;
+                } else
+                  m_finalize(filename);
+              } else {
+                if ((isDir && m_type == IFD_DIALOG_DIRECTORY) || !isDir)
+                  m_select(entry.Path, ImGui::GetIO().KeyCtrl);
+              }
             }
-          }
-          if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-            m_selectedFileItem = fileId;
-          fileId++;
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+              m_selectedFileItem = fileId;
+            fileId++;
 
-          // date
-          ImGui::TableSetColumnIndex(1);
-          auto tm = std::localtime(&entry.DateModified);
-          if (tm != nullptr)
-            ImGui::Text("%d/%d/%d %02d:%02d", tm->tm_mon + 1, tm->tm_mday, 1900 + tm->tm_year, tm->tm_hour, tm->tm_min);
-          else ImGui::Text("---");
+            // date
+            ImGui::TableSetColumnIndex(1);
+            auto tm = std::localtime(&entry.DateModified);
+            if (tm != nullptr)
+              ImGui::Text("%d/%d/%d %02d:%02d", tm->tm_mon + 1, tm->tm_mday, 1900 + tm->tm_year, tm->tm_hour, tm->tm_min);
+            else ImGui::Text("---");
 
-          // size
-          ImGui::TableSetColumnIndex(2);
-          if (!entry.IsDirectory) {
-            std::stringstream ss;
-            ss << HumanReadable{entry.Size};
-            ImGui::Text("%s", ss.str().c_str());
+            // size
+            ImGui::TableSetColumnIndex(2);
+            if (!entry.IsDirectory) {
+              std::stringstream ss;
+              ss << HumanReadable{entry.Size};
+              ImGui::Text("%s", ss.str().c_str());
+            }
+            else ImGui::Text("---");
           }
-          else ImGui::Text("---");
+        } else {
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::Text("Listing...");
         }
-
         ImGui::EndTable();
       }
     }
@@ -1242,7 +1339,10 @@ namespace ifd {
     else {
       // content
       int fileId = 0;
-      for (auto& entry : m_content) {
+
+      if (m_mtxContent.try_lock()) {
+        std::lock_guard<std::mutex> lock(m_mtxContent, std::adopt_lock);
+        for (auto& entry : m_content) {
         if (entry.HasIconPreview && entry.IconPreviewData != nullptr) {
           entry.IconPreview = this->CreateTexture(entry.IconPreviewData, entry.IconPreviewWidth, entry.IconPreviewHeight, 1);
           stbi_image_free(entry.IconPreviewData);
@@ -1275,6 +1375,7 @@ namespace ifd {
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
           m_selectedFileItem = fileId;
         fileId++;
+      }
       }
     }
   }
@@ -1359,6 +1460,9 @@ namespace ifd {
   void FileDialog::m_renderFileDialog()
   {
     m_doClearIcons();
+    m_doClearIconPreview();
+    m_doRefreshIconPreview();
+    m_doSetDirectory();
 
     /***** TOP BAR *****/
     bool noBackHistory = m_backHistory.empty(), noForwardHistory = m_forwardHistory.empty();
