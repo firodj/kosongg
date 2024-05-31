@@ -119,8 +119,11 @@ namespace ifd {
     std::unordered_map<std::string, void*> m_icons;
     void* m_getIcon(const std::filesystem::path& path);
     void m_clearIcons();
+    void m_doClearIcons();
     void m_refreshIconPreview();
     void m_clearIconPreview();
+
+    bool m_requestClearIcons{false};
 
     std::thread* m_previewLoader;
     bool m_previewLoaderRunning;

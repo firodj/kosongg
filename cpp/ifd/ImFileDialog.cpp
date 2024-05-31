@@ -871,8 +871,16 @@ namespace ifd {
     return tex;
   }
 
-  void FileDialog::m_clearIcons()
+  void FileDialog::m_clearIcons() {
+    m_requestClearIcons = true;
+  }
+  void FileDialog::m_doClearIcons()
   {
+    if (m_requestClearIcons) {
+      m_requestClearIcons = false;
+    } else {
+      return;
+    }
     std::vector<unsigned int> deletedIcons;
 
     // delete textures
@@ -1350,6 +1358,8 @@ namespace ifd {
   }
   void FileDialog::m_renderFileDialog()
   {
+    m_doClearIcons();
+
     /***** TOP BAR *****/
     bool noBackHistory = m_backHistory.empty(), noForwardHistory = m_forwardHistory.empty();
 
