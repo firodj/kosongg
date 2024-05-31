@@ -41,7 +41,6 @@
 
 #define ICON_SIZE ImGui::GetFont()->FontSize + 3
 #define GUI_ELEMENT_SIZE ImMax(GImGui->FontSize + 10.f, 24.f)
-#define DEFAULT_ICON_SIZE 32
 #define PI 3.141592f
 
 // ref: https://en.cppreference.com/w/cpp/filesystem/file_size
@@ -560,6 +559,7 @@ namespace ifd {
     }
     m_treeCache.push_back(thisPC);
 #endif
+
   }
   FileDialog::~FileDialog() {
     m_clearIconPreview();
@@ -827,8 +827,10 @@ namespace ifd {
 
   void* FileDialog::m_getIcon(const std::filesystem::path& path)
   {
-    if (m_icons.count(path.u8string()) > 0)
-      return m_icons[path.u8string()];
+    if (m_icons.count(path.u8string()) > 0) {
+      void * ptr = m_icons[path.u8string()];
+      if (ptr) return ptr;
+    }
 
     std::string pathU8 = path.u8string();
 
@@ -859,6 +861,7 @@ namespace ifd {
     m_iconIndices.push_back(iconForFile.GetINode());
     m_iconFilepaths.push_back(pathU8);
     m_icons[pathU8] = iconForFile.GetIcon(this->CreateTexture);
+
     return m_icons[pathU8];
   }
 
@@ -873,7 +876,7 @@ namespace ifd {
         continue;
 
       deletedIcons.push_back(ptr);
-      DeleteTexture(icon.second);
+      this->DeleteTexture(icon.second);
     }
     m_iconFilepaths.clear();
     m_iconIndices.clear();

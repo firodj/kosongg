@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ImFileDialogIconInfo.hpp"
+
 #include <string>
 #include <functional>
 #include <filesystem>
@@ -33,16 +35,18 @@ void WinGetSpecialFolder(SpecialFolders & result);
 const wchar_t * WinGetEnv(const wchar_t * name);
 
 namespace ifd {
-  class FileInfoWin32 {
-  private:
-    struct details;
-    details * m_details{};
-  public:
-    FileInfoWin32();
-    FileInfoWin32(const std::filesystem::path& path);
-    ~FileInfoWin32();
-    int GetINode();
-    bool HasIcon();
-    void *GetIcon(std::function<void*(uint8_t*, int, int, char)> createTexture);
-  };
+
+class FileInfoWin32: public FileIconInfoBase {
+private:
+  struct details;
+  details * m_details{};
+public:
+  FileInfoWin32();
+  FileInfoWin32(const std::filesystem::path& path);
+  ~FileInfoWin32();
+  int GetINode() override;
+  bool HasIcon() override;
+  void *GetIcon(std::function<void*(uint8_t*, int, int, char)> createTexture) override;
+};
+
 };

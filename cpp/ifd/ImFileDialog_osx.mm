@@ -4,8 +4,6 @@
 #import <Foundation/Foundation.h>
 #include <sys/stat.h>
 
-#define DEFAULT_ICON_SIZE 32
-
 namespace ifd {
 
 void Beep() {
