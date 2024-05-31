@@ -9,8 +9,38 @@ FileIconInfoBase::FileIconInfoBase() {
 
 }
 
+FileIconInfoBase::FileIconInfoBase(const std::filesystem::path& path): FileIconInfoBase() {
+  CheckDefaultIcon(path);
+}
+
+bool FileIconInfoBase::CheckDefaultIcon(const std::filesystem::path& path) {
+  std::error_code ec;
+  m_iconID = 1;
+  if (std::filesystem::is_directory(path, ec))
+    m_iconID = 0;
+  return !ec;
+}
+
 void FileIconInfoBase::SetDarkTheme(bool f) {
   m_isDarkTheme = f;
+}
+
+int FileIconInfoBase::GetINode() {
+  return m_iconID;
+}
+
+bool FileIconInfoBase::HasIcon() {
+  return true;
+}
+
+void * FileIconInfoBase::GetIcon(std::function<void*(uint8_t*, int, int, char)> createTexture) {
+  void * icondata{};
+
+  uint8_t* data = (uint8_t*)ifd::GetDefaultFileIcon(m_isDarkTheme);
+  if (m_iconID == 0)
+    data = (uint8_t*)ifd::GetDefaultFolderIcon(m_isDarkTheme);
+  icondata = createTexture(data, DEFAULT_ICON_SIZE, DEFAULT_ICON_SIZE, 0);
+  return icondata;
 }
 
 static const unsigned int file_icon[] = {

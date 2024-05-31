@@ -7,6 +7,8 @@
   #endif
 #endif
 #include "ImFileDialog.hpp"
+#include "ImFileDialogIconInfo.hpp"
+
 #ifdef __APPLE__
 #include "ImFileDialog_osx.hpp"
 #endif
@@ -827,42 +829,46 @@ namespace ifd {
 
   void* FileDialog::m_getIcon(const std::filesystem::path& path)
   {
-    if (m_icons.count(path.u8string()) > 0) {
-      void * ptr = m_icons[path.u8string()];
-      if (ptr) return ptr;
-    }
-
     std::string pathU8 = path.u8string();
+    void *tex = nullptr;
 
-    m_icons[pathU8] = nullptr;
+    if (m_icons.count(pathU8) > 0)
+      tex = m_icons[pathU8];
+    else {
 
 #if defined(_WIN32)
-    ifd::FileInfoWin32 iconForFile(path);
+      ifd::FileInfoWin32 iconForFile(path);
 #elif defined(__APPLE__)
-    ifd::FileInfoOsx iconForFile(pathU8);
+      ifd::FileInfoOsx iconForFile(pathU8);
 #else // LINUX
-    ImVec4 wndBg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-    void * icondata{};
-
-    ifd::FileInfoLinux iconForFile(pathU8);
-    // light theme - load default icons
-    iconForFile.SetDarkTheme(!((wndBg.x + wndBg.y + wndBg.z) / 3.0f > 0.5f));
+      ifd::FileIconInfoBase iconForFile(pathU8);
 #endif
-    if (!iconForFile.HasIcon()) return nullptr;
 
-    // check if icon is already loaded
-    auto itr = std::find(m_iconIndices.begin(), m_iconIndices.end(), iconForFile.GetINode());
-    if (itr != m_iconIndices.end()) {
-      const std::string& existingIconFilepath = m_iconFilepaths[itr - m_iconIndices.begin()];
-      m_icons[pathU8] = m_icons[existingIconFilepath];
-      return m_icons[pathU8];
+      // light theme - load default icons
+      ImVec4 wndBg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+      iconForFile.SetDarkTheme(!((wndBg.x + wndBg.y + wndBg.z) / 3.0f > 0.5f));
+
+      if (iconForFile.HasIcon()) {
+        // check if icon is already loaded
+        auto itr = std::find(m_iconIndices.begin(), m_iconIndices.end(), iconForFile.GetINode());
+        if (itr != m_iconIndices.end()) {
+          const std::string& existingIconFilepath = m_iconFilepaths[itr - m_iconIndices.begin()];
+          tex = m_icons[existingIconFilepath];
+        } else {
+          m_iconIndices.push_back(iconForFile.GetINode());
+          m_iconFilepaths.push_back(pathU8);
+          tex = iconForFile.GetIcon(this->CreateTexture);
+        }
+
+        m_icons[pathU8] = tex;
+      } else {
+        printf("doesnt HasIcon %s\n", pathU8.c_str());
+
+        m_icons[pathU8] = nullptr; // Hmmm....
+      }
     }
 
-    m_iconIndices.push_back(iconForFile.GetINode());
-    m_iconFilepaths.push_back(pathU8);
-    m_icons[pathU8] = iconForFile.GetIcon(this->CreateTexture);
-
-    return m_icons[pathU8];
+    return tex;
   }
 
   void FileDialog::m_clearIcons()

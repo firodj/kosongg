@@ -54,14 +54,14 @@ FileInfoWin32::FileInfoWin32() {
 static bool inited = false;
   if (!inited) {
     inited = true;
-    CoInitialize(NULL);
+    CoInitialize(NULL); // already called on MainThread GUI
   }
   m_details = new details();
 }
 
 FileInfoWin32::FileInfoWin32(const std::filesystem::path& path): FileInfoWin32() {
+  CheckDefaultIcon(path);
   std::error_code ec;
-
   DWORD attrs = 0;
   UINT flags = SHGFI_ICON | SHGFI_LARGEICON;
   if (!std::filesystem::exists(path, ec)) {
@@ -74,13 +74,20 @@ FileInfoWin32::FileInfoWin32(const std::filesystem::path& path): FileInfoWin32()
     if (pathW[i] == '/')
       pathW[i] = '\\';
 
-  SHGetFileInfoW(pathW.c_str(), attrs, &m_details->fileInfo, sizeof(SHFILEINFOW), flags);
+  DWORD_PTR ret = SHGetFileInfoW(pathW.c_str(), attrs, &m_details->fileInfo, sizeof(SHFILEINFOW), flags);
   // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
   // If SHGetFileInfo returns an icon handle in the hIcon member of the SHFILEINFO structure pointed to by psfi,
   // you are responsible for freeing it with DestroyIcon when you no longer need it.
+  if (!ret) {
+    printf("Error SHGetFileInfoW %ls\n", pathW.c_str());
+  }
 }
 
 FileInfoWin32::~FileInfoWin32() {
+  if(m_details->fileInfo.hIcon) {
+    DestroyIcon(m_details->fileInfo.hIcon);
+    m_details->fileInfo.hIcon = 0;
+  };
   delete m_details;
 }
 
@@ -95,10 +102,6 @@ int FileInfoWin32::GetINode() {
 void * FileInfoWin32::GetIcon(std::function<void*(uint8_t*, int, int, char)> createTexture) {
   ICONINFO iconInfo = { 0 };
   if (m_details->fileInfo.hIcon) {
-    std::shared_ptr<void> _(nullptr, [&](...) {
-      DestroyIcon(m_details->fileInfo.hIcon);
-      m_details->fileInfo.hIcon = 0;
-    });
     GetIconInfo(m_details->fileInfo.hIcon, &iconInfo);
 
     if (iconInfo.hbmColor == nullptr)

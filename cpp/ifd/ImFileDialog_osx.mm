@@ -24,6 +24,7 @@ FileInfoOsx::FileInfoOsx() {
 
 FileInfoOsx::FileInfoOsx(std::string apath): FileInfoOsx()  {
   std::error_code ec;
+  // CheckDefaultIcon(path);
 
   if (std::filesystem::exists(apath, ec)) {
     if (stat(apath.c_str(), &m_details->fileInfo) == -1) return;
