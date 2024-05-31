@@ -1082,14 +1082,14 @@ namespace ifd {
     } else
       shouldListDir = true;
 
-
     if (shouldListDir) {
       std::error_code ec;
-
       if (std::filesystem::exists(m_currentDirectory, ec)) {
         m_contentLoaderRunning = true;
+#if USE_CONTENTTHREAD == 1
         m_contentLoader = new std::thread([&](...) {
           std::lock_guard<std::mutex> lock(m_mtxContent);
+#endif
           std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
           std::shared_ptr<void> _(nullptr, [&](...) {
             m_contentLoaderRunning = false;
@@ -1147,7 +1147,9 @@ namespace ifd {
           printf("total sorting time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
 
           m_refreshIconPreview();
+#if USE_CONTENTTHREAD == 1
         });
+#endif
       }
     }
   }
