@@ -525,10 +525,10 @@ namespace ifd {
       rootPC = "/Volumes";
     }
 
-    for (const auto& entry : std::filesystem::directory_iterator(rootPC, ec)) {
-      if (std::filesystem::is_directory(entry, ec)) {
-        if (IsHidden(entry.path())) continue;
-        thisPC->Children.push_back(new FileTreeNode(entry.path().u8string()));
+    for (DirectoryIterator it(rootPC); it.valid(); it.next()) {
+      if (std::filesystem::is_directory(it.entryPath(), ec)) {
+        if (IsHidden(it.entryPath())) continue;
+        thisPC->Children.push_back(new FileTreeNode(it.entryPath().u8string()));
       }
     }
     m_treeCache.push_back(thisPC);
@@ -560,10 +560,10 @@ namespace ifd {
     thisPC->Read = true;
     thisPC->Special = true;
 
-    for (const auto& entry : std::filesystem::directory_iterator("/", ec)) {
-      if (std::filesystem::is_directory(entry, ec)) {
-        if (IsHidden(entry.path())) continue;
-        thisPC->Children.push_back(new FileTreeNode(entry.path().u8string()));
+    for (DirectoryIterator it("/"); it.valid(); it.next()) {
+      if (std::filesystem::is_directory(it.entryPath(), ec)) {
+        if (IsHidden(it.entryPath())) continue;
+        thisPC->Children.push_back(new FileTreeNode(it.entryPath().u8string()));
       }
     }
     m_treeCache.push_back(thisPC);
@@ -1096,20 +1096,13 @@ namespace ifd {
             m_contentLoaderRunning = false;
           });
 
-#if 1
           for (DirectoryIterator it(m_currentDirectory.u8string()); it.valid(); it.next()) {
             if (!m_contentLoaderRunning) {
               break;
             }
 
-            std::string entryPath = std::filesystem::path(m_currentDirectory / it.name()).u8string();
-
-            //printf("myfile.entryName: -->%s<--  result->d_name: -->%s<--\n",
-            //  dp.d_name,
-            //  result->d_name);
-
-            if (IsHidden(entryPath)) continue;
-            FileData info(entryPath);
+            if (IsHidden(it.entryPath())) continue;
+            FileData info(it.entryPath());
 
             // skip files when IFD_DIALOG_DIRECTORY
             if (!info.IsDirectory && m_type == IFD_DIALOG_DIRECTORY)
@@ -1145,52 +1138,7 @@ namespace ifd {
             }
 
             m_content.push_back(info);
-
           }
-
-
-#else
-          for (const auto& entry : std::filesystem::directory_iterator(m_currentDirectory, ec)) {
-            if (!m_contentLoaderRunning) {
-              break;
-            }
-
-            if (IsHidden(entry.path())) continue;
-            FileData info(entry.path());
-
-            // skip files when IFD_DIALOG_DIRECTORY
-            if (!info.IsDirectory && m_type == IFD_DIALOG_DIRECTORY)
-              continue;
-
-            // check if filename matches search query
-            if (m_searchBuffer[0]) {
-              std::string filename = info.Path.u8string();
-
-              std::string filenameSearch = filename;
-              std::string query(m_searchBuffer);
-              std::transform(filenameSearch.begin(), filenameSearch.end(), filenameSearch.begin(), ::tolower);
-              std::transform(query.begin(), query.end(), query.begin(), ::tolower);
-
-              if (filenameSearch.find(query, 0) == std::string::npos)
-                continue;
-            }
-
-            // check if extension matches
-            if (!info.IsDirectory && m_type != IFD_DIALOG_DIRECTORY) {
-              if (m_filterSelection < m_filterExtensions.size()) {
-                const auto& exts = m_filterExtensions[m_filterSelection];
-                if (exts.size() > 0 && info.Path.has_extension()) {
-                  std::string extension = toLower(info.Path.extension().u8string());
-                  // extension not found? skip
-                  if (std::count(exts.begin(), exts.end(), extension) == 0)
-                    continue;
-                }
-              }
-            }
-
-            m_content.push_back(info);
-          }
-#endif
 
           std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
           printf("DEBUG: total listing time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
@@ -1281,15 +1229,13 @@ namespace ifd {
     if (FolderNode(displayName.c_str(), (ImTextureID)m_getIcon(node->Path), isClicked, node->Special ? &isOpen : nullptr)) {
       if (!node->Read) {
         // cache children if it's not already cached
-#if 1
         if (std::filesystem::exists(node->Path, ec))
-          for (const auto& entry : std::filesystem::directory_iterator(node->Path, ec)) {
-            if (std::filesystem::is_directory(entry, ec)) {
-              if (IsHidden(entry.path())) continue;
-              node->Children.push_back(new FileTreeNode(entry.path().u8string()));
+          for (DirectoryIterator it(node->Path); it.valid(); it.next()) {
+            if (std::filesystem::is_directory(it.entryPath(), ec)) {
+              if (IsHidden(it.entryPath())) continue;
+              node->Children.push_back(new FileTreeNode(it.entryPath().u8string()));
             }
           }
-#endif
         node->Read = true;
       }
 

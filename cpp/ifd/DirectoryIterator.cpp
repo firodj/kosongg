@@ -66,6 +66,10 @@ std::string DirectoryIterator::name() const {
   return std::string(m_impl->m_entry->d_name);
 }
 
+std::filesystem::path DirectoryIterator::entryPath() const {
+  return std::filesystem::path(m_path) / name();
+}
+
 void DirectoryIterator::readNextEntry()
 {
   // Check directory handle

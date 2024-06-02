@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <filesystem>
 
 namespace ifd {
 
@@ -12,6 +13,7 @@ public:
   void next();
   std::string name() const;
   std::string path() const { return m_path; }
+  std::filesystem::path entryPath() const;
 
 private:
   struct Impl;
