@@ -44,12 +44,7 @@
 #endif
 
 #include "kosongg/UtfConv.h"
-#ifdef _WIN32
-#include <kosongg/win32dirent.h>
-#else
-#include <dirent.h>
-#endif
-#include <errno.h>
+#include "DirectoryIterator.hpp"
 
 #define ICON_SIZE ImGui::GetFont()->FontSize + 3
 #define GUI_ELEMENT_SIZE ImMax(GImGui->FontSize + 10.f, 24.f)
@@ -1102,32 +1097,12 @@ namespace ifd {
           });
 
 #if 1
-          DIR *dirp;
-          struct dirent dp{}; // used only for test with readdir_r
-          struct dirent *result;
-
-          if ((dirp = opendir(m_currentDirectory.u8string().c_str())) == NULL) {
-            printf("DEBUG: couldn't open %s\n", m_currentDirectory.u8string().c_str());
-            return;
-          }
-
-          int rc;
-          errno = 0;
-          //for (errno = 0; (rc = readdir_r(dirp, &dp, &result)) == 0 && result != NULL; errno = 0) {
-          for (errno = 0; (result = readdir(dirp)) != NULL; errno = 0) {
-
-            if (errno) {
-              if (errno == EILSEQ)
-                printf("DEBUG: errno = EILSEQ (illegal byte sequence), please enable utf-8/wchar\n", errno);
-              else
-                printf("DEBUG: errno = %d\n", errno);
-            }
-
+          for (DirectoryIterator it(m_currentDirectory.u8string()); it.valid(); it.next()) {
             if (!m_contentLoaderRunning) {
               break;
             }
 
-            std::string entryPath = std::filesystem::path(m_currentDirectory / result->d_name).u8string();
+            std::string entryPath = std::filesystem::path(m_currentDirectory / it.name()).u8string();
 
             //printf("myfile.entryName: -->%s<--  result->d_name: -->%s<--\n",
             //  dp.d_name,
@@ -1173,7 +1148,7 @@ namespace ifd {
 
           }
 
-          closedir(dirp);
+
 #else
           for (const auto& entry : std::filesystem::directory_iterator(m_currentDirectory, ec)) {
             if (!m_contentLoaderRunning) {
