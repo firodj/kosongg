@@ -422,8 +422,8 @@ namespace ifd {
     m_previewLoaderRunning = false;
     m_contentLoader = nullptr;
     m_contentLoaderRunning = false;
-
-    m_setDirectory(std::filesystem::current_path(), false);
+    m_currentDirectory = std::filesystem::current_path();
+    m_setDirectory(m_currentDirectory, false);
 
     // favorites are available on every OS
     FileTreeNode* quickAccess = new FileTreeNode("Quick Access");
@@ -877,9 +877,8 @@ namespace ifd {
 
         m_icons[pathU8] = tex;
       } else {
-        printf("doesnt HasIcon %s\n", pathU8.c_str());
-
-        m_icons[pathU8] = nullptr; // Hmmm....
+        printf("DEBUG: doesn't HasIcon %s\n", pathU8.c_str());
+        m_icons[pathU8] = nullptr; // FIXME: using default icons
       }
     }
 
@@ -1013,8 +1012,6 @@ namespace ifd {
 
       delete m_contentLoader;
       m_contentLoader = nullptr;
-
-      printf("contentLoader thread delete\n");
     }
   }
   void FileDialog::m_clearTree(FileTreeNode* node)
@@ -1110,10 +1107,9 @@ namespace ifd {
           struct dirent *result;
 
           if ((dirp = opendir(m_currentDirectory.u8string().c_str())) == NULL) {
-            printf("couldn't open %s\n", m_currentDirectory.u8string().c_str());
+            printf("DEBUG: couldn't open %s\n", m_currentDirectory.u8string().c_str());
             return;
           }
-          printf("open %s\n", m_currentDirectory.u8string().c_str());
 
           int rc;
           errno = 0;
@@ -1121,9 +1117,9 @@ namespace ifd {
 
             if (errno) {
               if (errno == EILSEQ)
-                printf("errno = EILSEQ (illegal byte sequence), please enable utf-8/wchar\n", errno);
+                printf("DEBUG: errno = EILSEQ (illegal byte sequence), please enable utf-8/wchar\n", errno);
               else
-                printf("errno = %d\n", errno);
+                printf("DEBUG: errno = %d\n", errno);
             }
 
             if (!m_contentLoaderRunning) {
@@ -1219,7 +1215,7 @@ namespace ifd {
 #endif
 
           std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
-          printf("total listing time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
+          printf("DEBUG: total listing time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
 
           if (!m_contentLoaderRunning) return;
 
