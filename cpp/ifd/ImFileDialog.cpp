@@ -1113,19 +1113,29 @@ namespace ifd {
             printf("couldn't open %s\n", m_currentDirectory.u8string().c_str());
             return;
           }
+          printf("open %s\n", m_currentDirectory.u8string().c_str());
 
           int rc;
           errno = 0;
-          for (errno = 0; (rc = readdir_r(dirp, &dp, &result)) == 0 && result != NULL && errno == 0; errno = 0) {
+          for (errno = 0; (rc = readdir_r(dirp, &dp, &result)) == 0 && result != NULL; errno = 0) {
+
+            if (errno) {
+              if (errno == EILSEQ)
+                printf("errno = EILSEQ (illegal byte sequence), please enable utf-8/wchar\n", errno);
+              else
+                printf("errno = %d\n", errno);
+            }
+
             if (!m_contentLoaderRunning) {
               break;
             }
 
-            printf("myfile.entryName: -->%s<--  result->d_name: -->%s<--\n",
-                  dp.d_name,
-                  result->d_name);
+            //auto entryPathX = std::filesystem::path(m_currentDirectory / dp.d_name);
+            std::string entryPath = std::filesystem::path(m_currentDirectory / dp.d_name).u8string();
 
-            std::string entryPath = m_currentDirectory / dp.d_name;
+            //printf("myfile.entryName: -->%s<--  result->d_name: -->%s<--\n",
+            //  dp.d_name,
+            //  result->d_name);
 
             if (IsHidden(entryPath)) continue;
             FileData info(entryPath);
