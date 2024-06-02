@@ -1103,7 +1103,7 @@ namespace ifd {
 
 #if 1
           DIR *dirp;
-          struct dirent dp{};
+          struct dirent dp{}; // used only for test with readdir_r
           struct dirent *result;
 
           if ((dirp = opendir(m_currentDirectory.u8string().c_str())) == NULL) {
@@ -1113,7 +1113,8 @@ namespace ifd {
 
           int rc;
           errno = 0;
-          for (errno = 0; (rc = readdir_r(dirp, &dp, &result)) == 0 && result != NULL; errno = 0) {
+          //for (errno = 0; (rc = readdir_r(dirp, &dp, &result)) == 0 && result != NULL; errno = 0) {
+          for (errno = 0; (result = readdir(dirp)) != NULL; errno = 0) {
 
             if (errno) {
               if (errno == EILSEQ)
@@ -1126,8 +1127,7 @@ namespace ifd {
               break;
             }
 
-            //auto entryPathX = std::filesystem::path(m_currentDirectory / dp.d_name);
-            std::string entryPath = std::filesystem::path(m_currentDirectory / dp.d_name).u8string();
+            std::string entryPath = std::filesystem::path(m_currentDirectory / result->d_name).u8string();
 
             //printf("myfile.entryName: -->%s<--  result->d_name: -->%s<--\n",
             //  dp.d_name,
@@ -1157,10 +1157,13 @@ namespace ifd {
             if (!info.IsDirectory && m_type != IFD_DIALOG_DIRECTORY) {
               if (m_filterSelection < m_filterExtensions.size()) {
                 const auto& exts = m_filterExtensions[m_filterSelection];
-                if (exts.size() > 0 && info.Path.has_extension()) {
-                  std::string extension = toLower(info.Path.extension().u8string());
-                  // extension not found? skip
-                  if (std::count(exts.begin(), exts.end(), extension) == 0)
+                if (exts.size() > 0) {
+                  if (info.Path.has_extension()) {
+                    std::string extension = toLower(info.Path.extension().u8string());
+                    // extension not found? skip
+                    if (std::count(exts.begin(), exts.end(), extension) == 0)
+                      continue;
+                  } else // skip if file doesn't have extension
                     continue;
                 }
               }
