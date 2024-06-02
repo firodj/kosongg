@@ -6,6 +6,9 @@
   #define STBI_WINDOWS_UTF8
   #endif
 #endif
+
+#define USE_CONTENTTHREAD  1
+
 #include "ImFileDialog.hpp"
 #include "ImFileDialogIconInfo.hpp"
 
@@ -41,6 +44,12 @@
 #endif
 
 #include "kosongg/UtfConv.h"
+#ifdef _WIN32
+#include <kosongg/win32dirent.h>
+#else
+#include <dirent.h>
+#endif
+#include <errno.h>
 
 #define ICON_SIZE ImGui::GetFont()->FontSize + 3
 #define GUI_ELEMENT_SIZE ImMax(GImGui->FontSize + 10.f, 24.f)
@@ -1095,10 +1104,73 @@ namespace ifd {
             m_contentLoaderRunning = false;
           });
 
+#if 1
+          DIR *dirp;
+          struct dirent dp{};
+          struct dirent *result;
+
+          if ((dirp = opendir(m_currentDirectory.u8string().c_str())) == NULL) {
+            printf("couldn't open %s\n", m_currentDirectory.u8string().c_str());
+            return;
+          }
+
+          int rc;
+          errno = 0;
+          for (errno = 0; (rc = readdir_r(dirp, &dp, &result)) == 0 && result != NULL && errno == 0; errno = 0) {
+            if (!m_contentLoaderRunning) {
+              break;
+            }
+
+            printf("myfile.entryName: -->%s<--  result->d_name: -->%s<--\n",
+                  dp.d_name,
+                  result->d_name);
+
+            std::string entryPath = m_currentDirectory / dp.d_name;
+
+            if (IsHidden(entryPath)) continue;
+            FileData info(entryPath);
+
+            // skip files when IFD_DIALOG_DIRECTORY
+            if (!info.IsDirectory && m_type == IFD_DIALOG_DIRECTORY)
+              continue;
+
+            // check if filename matches search query
+            if (m_searchBuffer[0]) {
+              std::string filename = info.Path.u8string();
+
+              std::string filenameSearch = filename;
+              std::string query(m_searchBuffer);
+              std::transform(filenameSearch.begin(), filenameSearch.end(), filenameSearch.begin(), ::tolower);
+              std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+
+              if (filenameSearch.find(query, 0) == std::string::npos)
+                continue;
+            }
+
+            // check if extension matches
+            if (!info.IsDirectory && m_type != IFD_DIALOG_DIRECTORY) {
+              if (m_filterSelection < m_filterExtensions.size()) {
+                const auto& exts = m_filterExtensions[m_filterSelection];
+                if (exts.size() > 0 && info.Path.has_extension()) {
+                  std::string extension = toLower(info.Path.extension().u8string());
+                  // extension not found? skip
+                  if (std::count(exts.begin(), exts.end(), extension) == 0)
+                    continue;
+                }
+              }
+            }
+
+            m_content.push_back(info);
+
+          }
+
+          closedir(dirp);
+#else
           for (const auto& entry : std::filesystem::directory_iterator(m_currentDirectory, ec)) {
             if (!m_contentLoaderRunning) {
               break;
             }
+
             if (IsHidden(entry.path())) continue;
             FileData info(entry.path());
 
@@ -1134,19 +1206,16 @@ namespace ifd {
 
             m_content.push_back(info);
           }
+#endif
 
           std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
           printf("total listing time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
 
           if (!m_contentLoaderRunning) return;
 
-          start = stop;
           m_sortContent(m_sortColumn, m_sortDirection);
-
-          stop = std::chrono::high_resolution_clock::now();
-          printf("total sorting time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
-
           m_refreshIconPreview();
+
 #if USE_CONTENTTHREAD == 1
         });
 #endif
@@ -1228,6 +1297,7 @@ namespace ifd {
     if (FolderNode(displayName.c_str(), (ImTextureID)m_getIcon(node->Path), isClicked, node->Special ? &isOpen : nullptr)) {
       if (!node->Read) {
         // cache children if it's not already cached
+#if 1
         if (std::filesystem::exists(node->Path, ec))
           for (const auto& entry : std::filesystem::directory_iterator(node->Path, ec)) {
             if (std::filesystem::is_directory(entry, ec)) {
@@ -1235,6 +1305,7 @@ namespace ifd {
               node->Children.push_back(new FileTreeNode(entry.path().u8string()));
             }
           }
+#endif
         node->Read = true;
       }
 
