@@ -23,6 +23,7 @@ protected:
   int           m_windowHeight;
   int           m_screenWidth;
   int           m_screenHeight;
+  std::string   m_imguiConfigPath;
 
   void InitSDL();
   void InitImGui();

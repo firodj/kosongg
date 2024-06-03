@@ -101,6 +101,9 @@ void EngineBase::InitImGui() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO(); (void)io;
+  m_imguiConfigPath = GetResourcePath("configs", "imgui.ini");
+  io.IniFilename = m_imguiConfigPath.c_str();
+
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
