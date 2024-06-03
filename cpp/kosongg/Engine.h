@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 struct SDL_Window;
 typedef void *SDL_GLContext;
 
@@ -36,6 +38,7 @@ public:
   virtual void Init();
   void Run();
   virtual void Clean();
+  virtual std::string GetResourcePath(const char *path, const char *file);
 };
 
 };

@@ -12,6 +12,7 @@
 #include <mutex>
 #include <cstdio>
 #include <SDL.h>
+#include <filesystem>
 
 #include "kosongg/Engine.h"
 #include "kosongg/Component.h"
@@ -140,7 +141,10 @@ void EngineBase::InitImGui() {
   //config.OversampleV = 2;
   config.RasterizerDensity = m_hidpiX;    // 2.0f for retina-display
   //config.GlyphExtraSpacing.x = -0.5f;
-  ImFont* font = io.Fonts->AddFontFromFileTTF("kosongg/fonts/selawkl.ttf", 18.0f, &config);
+  std::string selawikPath = GetResourcePath("kosongg/fonts", "selawkl.ttf");
+  ImFont* font = io.Fonts->AddFontFromFileTTF(selawikPath.c_str(), 18.0f, &config);
+  if (!font) printf("ERROR: unable to load: %s\n", selawikPath.c_str());
+
   //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/SF-Pro-Text-Regular.otf", 14.0f, &config);
 
   //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
@@ -157,7 +161,11 @@ void EngineBase::InitImGui() {
   icons_config.PixelSnapH = true;
   icons_config.RasterizerDensity = m_hidpiX;    // 2.0f for retina-display
   icons_config.GlyphMinAdvanceX = iconFontSize;
-  ImFont* fa_font = io.Fonts->AddFontFromFileTTF( "kosongg/fonts/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icons_config, icons_ranges );
+
+  std::string faPath = GetResourcePath("kosongg/fonts", FONT_ICON_FILE_NAME_FAS);
+  ImFont* fa_font = io.Fonts->AddFontFromFileTTF(faPath.c_str(), iconFontSize, &icons_config, icons_ranges );
+  if (!fa_font) printf("ERROR: unable to load: %s\n", faPath.c_str());
+
   // use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
   IM_ASSERT(fa_font != nullptr);
 }
@@ -264,6 +272,13 @@ void EngineBase::Init() {
 }
 
 void EngineBase::Clean() {
+}
+
+std::string EngineBase::GetResourcePath(const char *path, const char *file) {
+  std::filesystem::path spath(path);
+  std::filesystem::path sfile(file);
+  std::string res = spath / sfile;
+  return res;
 }
 
 }
