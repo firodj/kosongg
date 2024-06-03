@@ -1230,7 +1230,7 @@ namespace ifd {
       if (!node->Read) {
         // cache children if it's not already cached
         if (std::filesystem::exists(node->Path, ec))
-          for (DirectoryIterator it(node->Path); it.valid(); it.next()) {
+          for (DirectoryIterator it(node->Path.u8string()); it.valid(); it.next()) {
             if (std::filesystem::is_directory(it.entryPath(), ec)) {
               if (IsHidden(it.entryPath())) continue;
               node->Children.push_back(new FileTreeNode(it.entryPath().u8string()));

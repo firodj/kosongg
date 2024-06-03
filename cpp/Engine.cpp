@@ -280,7 +280,7 @@ void EngineBase::Clean() {
 std::string EngineBase::GetResourcePath(const char *path, const char *file) {
   std::filesystem::path spath(path);
   std::filesystem::path sfile(file);
-  std::string res = spath / sfile;
+  std::string res((spath / sfile).u8string());
   return res;
 }
 
