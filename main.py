@@ -10,6 +10,7 @@ project_name = 'cobacoba'
 cpp_std='17'
 c_std='17'
 output_path = '..'
+bundle_reverse_domain = 'org.kosongg'
 
 current_path = os.path.dirname(__file__)
 project_path = os.path.normpath(os.path.join(current_path, '../'))
@@ -61,6 +62,7 @@ def createCMake():
         headers=headers,
         others=others,
         msvc=msvc,
+        bundle_reverse_domain=bundle_reverse_domain,
     )
 
     with open(os.path.join(project_path, 'CMakeLists.txt'), 'w') as f:
@@ -104,6 +106,17 @@ def checkRunPy():
 
         st = os.stat(run_py_path)
         os.chmod(run_py_path, st.st_mode | stat.S_IEXEC)
+
+def checkInfoPlist():
+    info_py_path = os.path.join(project_path, 'Info.plist.in')
+    if not os.path.exists(info_py_path):
+        template = jenv.get_template("Info.plist.in.jinja")
+        contents = template.render(
+            project_name=project_name,
+            bundle_reverse_domain=bundle_reverse_domain,
+        )
+        with open(info_py_path, 'w') as f:
+            f.write(contents)
 
 def checkExt():
     ext_path = project_path + '/ext'
@@ -173,6 +186,7 @@ def getExistingSources():
         print("DEBUG:", e)
 
 def checkConfig():
+    global bundle_reverse_domain
     config = configparser.ConfigParser()
     cfgpath = os.path.join(project_path, 'kosongg.ini')
     if not os.path.exists(cfgpath):
@@ -188,8 +202,11 @@ def checkConfig():
             libmgr.enable(k)
             adds.append(k)
     for k in adds:
+        print("DEBUG:", k)
         libmgr.add(k)
     libmgr.apply_hooks()
+
+    bundle_reverse_domain = config['BUNDLE'].get('reverse_domain')
 
 def checkVscode():
     vscode_path = os.path.join(project_path, '.vscode')
@@ -217,6 +234,7 @@ if __name__ == '__main__':
     createStarter()
     createCMake()
     checkRunPy()
+    checkInfoPlist()
     checkGitIgnore()
     checkVscode()
 

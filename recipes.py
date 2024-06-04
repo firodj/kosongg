@@ -251,7 +251,8 @@ class LibraryManager:
             repo = dict(
                 url='https://github.com/ocornut/imgui.git',
                 path='ext/imgui-docking',
-                branch='v1.90.7-docking',
+                branch="docking",
+                #branch='v1.90.7-docking',
             )
         ))
 

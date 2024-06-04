@@ -5,6 +5,10 @@
 struct SDL_Window;
 typedef void *SDL_GLContext;
 
+#if defined(__APPLE__) && defined(BUILD_APPLE_BUNDLE)
+std::string GetBundleResourcePath(const char * path);
+#endif
+
 namespace kosongg {
 
 class EngineBase {
