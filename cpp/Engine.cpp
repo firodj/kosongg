@@ -26,6 +26,9 @@ EngineBase::EngineBase(/* dependency */) {
   m_windowTitle = "My SDL Empty Window";
   m_showDemoWindow = true;
   m_showAnotherWindow = false;
+  m_showToolMetrics = false;
+  m_showToolDebugLog = false;
+  m_showToolAbout = false;
   m_clearColor = IM_COL32(255,255,255,255); // ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 }
 
@@ -181,6 +184,12 @@ void EngineBase::RunImGui() {
   // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
   if (m_showDemoWindow)
     ImGui::ShowDemoWindow(&m_showDemoWindow);
+  if (m_showToolMetrics)
+    ImGui::ShowMetricsWindow(&m_showToolMetrics);
+  if (m_showToolDebugLog)
+    ImGui::ShowDebugLogWindow(&m_showToolDebugLog);
+  if (m_showToolAbout)
+    ImGui::ShowAboutWindow(&m_showToolAbout);
 
   // 3. Show another simple window.
   if (m_showAnotherWindow)
