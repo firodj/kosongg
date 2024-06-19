@@ -28,10 +28,18 @@ protected:
   int           m_screenWidth;
   int           m_screenHeight;
   std::string   m_imguiConfigPath;
+  int           m_toolBarSize;
+  int           m_menuBarHeight;
+  unsigned int  m_dockSpaceID;
 
   void InitSDL();
   void InitImGui();
   virtual void RunImGui();
+  bool BeginDockSpace();
+  void EndDockSpace();
+  bool BeginToolBar();
+  void EndToolBar();
+  int GetToolBarSize();
 
 public:
   EngineBase(/* dependency */);

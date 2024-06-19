@@ -3,7 +3,9 @@
     #define IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
@@ -171,6 +173,8 @@ void EngineBase::InitImGui() {
 
   // use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
   IM_ASSERT(fa_font != nullptr);
+
+  m_toolBarSize = -1;
 }
 
 void EngineBase::RunImGui() {
@@ -198,7 +202,6 @@ void EngineBase::RunImGui() {
 
     ImGui::End();
   }
-
 }
 
 void EngineBase::Run() {
@@ -282,6 +285,76 @@ std::string EngineBase::GetResourcePath(const char *path, const char *file) {
   std::filesystem::path sfile(file);
   std::string res((spath / sfile).u8string());
   return res;
+}
+
+int EngineBase::GetToolBarSize() {
+  if (m_toolBarSize == -1) {
+    ImGuiStyle &style = ImGui::GetStyle();
+    m_toolBarSize = ImGui::GetFrameHeight() + 2 * style.WindowPadding.y;
+    printf("%d\n", m_toolBarSize);
+  }
+  return m_toolBarSize;
+}
+
+bool EngineBase::BeginDockSpace() {
+  ImGuiViewport* viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(viewport->Pos + ImVec2(0, GetToolBarSize()));
+  ImGui::SetNextWindowSize(viewport->Size - ImVec2(0, GetToolBarSize()));
+  ImGui::SetNextWindowViewport(viewport->ID);
+  ImGuiWindowFlags window_flags = 0
+          | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking
+          | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
+          | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+  bool ret = ImGui::Begin("MasterDockSpace", NULL, window_flags);
+  // Save off menu bar height for later.
+  m_menuBarHeight = ImGui::GetCurrentWindow()->MenuBarHeight();
+
+  m_dockSpaceID = ImGui::GetID("MainDockspace");
+  ImGui::DockSpace(m_dockSpaceID);
+
+  //ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_DockSpace);
+  //ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+
+  return ret;
+}
+
+void EngineBase::EndDockSpace () {
+  //ImGui::DockBuilderFinish(m_dockSpaceID);
+
+  ImGui::End();
+  ImGui::PopStyleVar(3);
+}
+
+bool EngineBase::BeginToolBar() {
+  ImGuiViewport* viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menuBarHeight));
+  ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, GetToolBarSize()));
+  ImGui::SetNextWindowViewport(viewport->ID);
+
+  ImGuiWindowFlags window_flags = 0
+          | ImGuiWindowFlags_NoDocking
+          | ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoResize
+          | ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoScrollbar
+          | ImGuiWindowFlags_NoSavedSettings
+          ;
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+  bool ret = ImGui::Begin("TOOLBAR", NULL, window_flags);
+  ImGui::PopStyleVar();
+
+  return ret;
+}
+
+void EngineBase::EndToolBar()
+{
+  ImGui::End();
 }
 
 }
