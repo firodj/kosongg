@@ -85,6 +85,7 @@ class LibraryManager:
         self.useLibAssert()
         self.useJdksMidi()
         self.useTinySoundFont()
+        self.useDynalo()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -381,8 +382,19 @@ class LibraryManager:
             name="tsf",
             path="ext/tsf",
             repo=dict(
-                url="https://github.com/firodj/tsf",
+                url="https://github.com/firodj/tsf.git",
                 path="ext/tsf",
                 branch="dev",
+            ),
+        ))
+
+    def useDynalo(self):
+        self.append(dict(
+            name="dynalo",
+            path="ext/dynalo-sv",
+            repo=dict(
+                url="https://github.com/firodj/dynalo-sv.git",
+                path="ext/dynalo-sv",
+                branch="master",
             ),
         ))
