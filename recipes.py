@@ -253,7 +253,7 @@ class LibraryManager:
                 url='https://github.com/ocornut/imgui.git',
                 path='ext/imgui-docking',
                 branch="docking",
-                #branch='v1.90.7-docking',
+                #branch='v1.91.6-docking',
             )
         ))
 

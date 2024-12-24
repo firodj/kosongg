@@ -322,7 +322,7 @@ bool EngineBase::BeginDockSpace() {
 
   bool ret = ImGui::Begin("MasterDockSpace", NULL, window_flags);
   // Save off menu bar height for later.
-  m_menuBarHeight = ImGui::GetCurrentWindow()->MenuBarHeight();
+  m_menuBarHeight = ImGui::GetCurrentWindow()->MenuBarHeight;
 
   m_dockSpaceID = ImGui::GetID("MainDockspace");
   ImGui::DockSpace(m_dockSpaceID);
