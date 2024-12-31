@@ -28,7 +28,7 @@ find_package({{ req }} REQUIRED)
 
 {%- for lib in libraries -%}
 {%- for set in lib.sets if lib.sets %}
-set("{{ set.name }}" {{ set.value | value_format }})
+set({{ set.name }} {{ set.value | value_format }})
 {%- endfor %}
 {%- if lib.path %}
 add_subdirectory({{ lib.path }})
@@ -45,6 +45,27 @@ include_directories(SYSTEM
 {%- endfor %}
 {%- endfor %}
 )
+
+{%- for lib in libraries %}
+{%- if lib.lib_sources %}
+set({{ lib.name }}_SOURCES
+{%- for src in lib.lib_sources %}
+  {{ src }}
+{%- endfor %}
+)
+
+add_library({{ lib.name }} STATIC
+  ${ {{- lib.name }}_SOURCES}
+)
+
+if ({{ lib.name }}_SHARED)
+set_target_properties({{ lib.name }} PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
+  LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
+)
+endif()
+{%- endif -%}
+{%- endfor %}
 
 set(SOURCE
   ${VENDOR_DIR}/main.cpp

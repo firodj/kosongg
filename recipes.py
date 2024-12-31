@@ -86,6 +86,7 @@ class LibraryManager:
         self.useJdksMidi()
         self.useTinySoundFont()
         self.useDynalo()
+        self.useHsCpp()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -242,12 +243,15 @@ class LibraryManager:
                 '${IMGUI_DIR}',
                 '${IMGUI_DIR}/backends'
             ],
-            sources = [
+            lib_sources = [
                 '${IMGUI_DIR}/imgui.cpp',
                 '${IMGUI_DIR}/imgui_demo.cpp',
                 '${IMGUI_DIR}/imgui_draw.cpp',
                 '${IMGUI_DIR}/imgui_tables.cpp',
                 '${IMGUI_DIR}/imgui_widgets.cpp',
+            ],
+            link_libs = [
+                'imgui',
             ],
             repo = dict(
                 url='https://github.com/ocornut/imgui.git',
@@ -391,10 +395,25 @@ class LibraryManager:
     def useDynalo(self):
         self.append(dict(
             name="dynalo",
-            path="ext/dynalo-sv",
+            path="ext/dynalo",
             repo=dict(
-                url="https://github.com/firodj/dynalo-sv.git",
-                path="ext/dynalo-sv",
+                url="https://github.com/Stat1cV01D/dynalo.git",
+                path="ext/dynalo",
                 branch="master",
+            ),
+        ))
+
+    def useHsCpp(self):
+        self.append(dict(
+            name="hscpp",
+            path="ext/hscpp",
+            sets = [
+                dict(name="HSCPP_BUILD_EXAMPLES", value=False),
+                dict(name="HSCPP_BUILD_TESTS", value=False),
+            ],
+            repo=dict(
+                url="https://github.com/firodj/hscpp.git",
+                path="ext/hscpp",
+                branch="firodj",
             ),
         ))
