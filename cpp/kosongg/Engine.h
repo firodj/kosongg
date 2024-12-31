@@ -46,7 +46,7 @@ protected:
 
 public:
   EngineBase(/* dependency */);
-  ~EngineBase();
+  virtual ~EngineBase();
 
   EngineBase(EngineBase &other) = delete;
   void operator=(const EngineBase &) = delete;

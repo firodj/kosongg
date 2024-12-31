@@ -411,6 +411,10 @@ class LibraryManager:
                 dict(name="HSCPP_BUILD_EXAMPLES", value=False),
                 dict(name="HSCPP_BUILD_TESTS", value=False),
             ],
+            defs = ["_USE_HSCPP_"],
+            link_libs = [
+                'hscpp',
+            ],
             repo=dict(
                 url="https://github.com/firodj/hscpp.git",
                 path="ext/hscpp",
