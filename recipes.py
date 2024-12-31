@@ -249,6 +249,7 @@ class LibraryManager:
                 '${IMGUI_DIR}/imgui_draw.cpp',
                 '${IMGUI_DIR}/imgui_tables.cpp',
                 '${IMGUI_DIR}/imgui_widgets.cpp',
+                '${VENDOR_DIR}/Component.cpp',
             ],
             link_libs = [
                 'imgui',

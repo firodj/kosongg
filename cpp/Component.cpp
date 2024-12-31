@@ -124,7 +124,7 @@ bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButt
     }
 #endif
 
-    ImGui::RenderNavHighlight(bb, id);
+    ImGui::RenderNavCursor(bb, id);
 
     //
 #if COLORED_BUTTON_MODE == 1
