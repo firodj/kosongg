@@ -10,6 +10,9 @@ executable = "{{ project_name }}d"
 build_name = "build-ninja"
 build_mode = "Debug"
 generator_name = "Ninja Multi-Config"
+bin_path = os.path.join(current_path, "bin")
+build_path = os.path.join(current_path, build_name)
+runtime_path = bin_path
 
 passargs = []
 args = sys.argv[1:]
@@ -27,6 +30,7 @@ if len(args) >= 1:
       case _:
         raise Exception("invalid cmd %s" % (cmd,))
 
+bin_path = os.path.join(current_path, "bin")
 build_path = os.path.join(current_path, build_name)
 if not os.path.exists(build_path):
   os.mkdir(build_path)
@@ -37,12 +41,13 @@ shellcmd = "cmake --build %s --target \"%s\" --config %s" % (build_name, target,
 print(shellcmd)
 subprocess.run(shellcmd, shell=True, check=True)
 
-shellcmd = "./%s" % (executable,)
-if os.name == 'nt':
-  shellcmd = "%s.exe" %  (executable.replace("/", "\\"),)
+if executable:
+  shellcmd = "%s/%s" % (runtime_path, executable,)
+  if os.name == 'nt':
+    shellcmd = "%s\\%s.exe" %  (runtime_path, executable.replace("/", "\\"),)
 
-if len(passargs) > 0:
-  shellcmd += " " + " ".join(passargs)
+  if len(passargs) > 0:
+    shellcmd += " \"" + "\" \"".join(passargs) + "\""
 
-print(shellcmd)
-subprocess.run(shellcmd, shell=True, check=True)
+  print(shellcmd)
+  subprocess.run(shellcmd, shell=True, check=True)

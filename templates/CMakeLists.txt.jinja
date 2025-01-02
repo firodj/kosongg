@@ -7,6 +7,10 @@ set(CMAKE_C_STANDARD {{ c_std }})
 set(VENDOR_DIR kosongg/cpp)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_APPLE_BUNDLE "Build Apple Bundle" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 
 if (APPLE)
   ## update the environment with VIRTUAL_ENV variable (mimic the activate script)
@@ -54,16 +58,9 @@ set({{ lib.name }}_SOURCES
 {%- endfor %}
 )
 
-add_library({{ lib.name }} STATIC
+add_library({{ lib.name }}
   ${ {{- lib.name }}_SOURCES}
 )
-
-if ({{ lib.name }}_SHARED)
-set_target_properties({{ lib.name }} PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
-  LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
-)
-endif()
 {%- endif -%}
 {%- endfor %}
 
@@ -203,7 +200,8 @@ else()
   endif()
 endif()
 
-add_compile_definitions(_USE_
+add_compile_definitions(
+  _PROJECT_SRC_PATH_="${CMAKE_SOURCE_DIR}"
 {%- for lib in libraries -%}
 {% for def in lib.defs if lib.defs %}
   {{ def }}
@@ -224,8 +222,8 @@ if (BUILD_APPLE_BUNDLE)
 
 else()
 set_target_properties({{ project_name }} PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
-  VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin"
+  VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
   DEBUG_POSTFIX "d"
 )
 endif()
