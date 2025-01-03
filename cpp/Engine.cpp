@@ -281,7 +281,7 @@ void EngineBase::Run() {
   SDL_Quit();
 }
 
-void EngineBase::Init() {
+void EngineBase::Init(std::vector<std::string> &args) {
   InitSDL();
   InitImGui();
 }

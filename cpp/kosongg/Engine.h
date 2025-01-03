@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -51,7 +52,7 @@ public:
   EngineBase(EngineBase &other) = delete;
   void operator=(const EngineBase &) = delete;
 
-  virtual void Init();
+  virtual void Init(std::vector<std::string> &args);
   void Run();
   virtual void Clean();
   virtual std::string GetResourcePath(const char *path, const char *file);

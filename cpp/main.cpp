@@ -1,12 +1,15 @@
 #include "MainApp.hpp"
-
+#include <string>
+#include <vector>
 #undef main
 
 static
 int _main(int argc, char ** argv)
 {
+	std::vector< std::string > args( argv, argv + argc );
+
     MainApp *mainApp = MainApp::GetInstance();
-    mainApp->Init();
+    mainApp->Init(args);
     mainApp->Run();
     mainApp->Clean();
 
