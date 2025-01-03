@@ -161,7 +161,7 @@ class LibraryManager:
                 dict(name="SDL2_DISABLE_SDL2MAIN", value=True)
             ],
             defs = ["SDL_MAIN_HANDLED"],
-            link_libs = ["SDL2-static"],
+            link_libs = ["SDL2"],
             options = [],
             path = "ext/sdl2",
             repo = dict(
@@ -415,6 +415,7 @@ class LibraryManager:
             defs = ["_USE_HSCPP_"],
             link_libs = [
                 'hscpp',
+                'hscpp-mem',
             ],
             repo=dict(
                 url="https://github.com/firodj/hscpp.git",
