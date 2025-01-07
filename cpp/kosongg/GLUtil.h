@@ -14,4 +14,6 @@ void GLAPIENTRY OnGLMessageCallback(GLenum source,
   const GLchar* message,
   const void* userParam);
 
+bool LoadTextureFromFile(const char* filename, unsigned int* out_texture, int* out_width, int* out_height);
+
 };
