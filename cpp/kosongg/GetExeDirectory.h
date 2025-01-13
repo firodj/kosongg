@@ -19,9 +19,7 @@ std::filesystem::path GetExeDirectory() {
 #elif __APPLE__
     char szPath[PATH_MAX];
     uint32_t bufsize = PATH_MAX;
-    if (!_NSGetExecutablePath(szPath, &bufsize))
-        return std::filesystem::path{szPath}.parent_path() / ""; // to finish the folder path with (back)slash
-    return {};  // some error
+    if (_NSGetExecutablePath(szPath, &bufsize)) return {};  // some error
 #else
     // Linux specific
     char szPath[PATH_MAX];
@@ -30,4 +28,5 @@ std::filesystem::path GetExeDirectory() {
         return {}; // some error
     szPath[count] = '\0';
 #endif
+    return std::filesystem::path{szPath}.parent_path() / ""; // to finish the folder path with (back)slash
 }
