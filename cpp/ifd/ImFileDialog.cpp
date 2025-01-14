@@ -1091,7 +1091,7 @@ namespace ifd {
         m_contentLoader = new std::thread([&](...) {
           std::lock_guard<std::mutex> lock(m_mtxContent);
 #endif
-          std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
+          std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
           std::shared_ptr<void> _(nullptr, [&](...) {
             m_contentLoaderRunning = false;
           });
@@ -1140,7 +1140,7 @@ namespace ifd {
             m_content.push_back(info);
           }
 
-          std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
+          std::chrono::steady_clock::time_point stop = std::chrono::steady_clock::now();
           printf("DEBUG: total listing time: %.3f ms\n", std::chrono::duration<float, std::milli>(stop - start).count());
 
           if (!m_contentLoaderRunning) return;
