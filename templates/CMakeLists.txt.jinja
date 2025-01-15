@@ -61,6 +61,10 @@ set({{ lib.name }}_SOURCES
 add_library({{ lib.name }}
   ${ {{- lib.name }}_SOURCES}
 )
+if (BUILD_SHARED_LIBS)
+  target_compile_definitions({{ lib.name }} INTERFACE {{ lib.name }}_IMPORTS)
+endif()
+
 {%- endif -%}
 {%- endfor %}
 
@@ -120,7 +124,9 @@ set_target_properties({{ project_name }} PROPERTIES
   MACOSX_BUNDLE_INFO_PLIST                       "${CMAKE_SOURCE_DIR}/Info.plist.in"
   MACOSX_BUNDLE                                  "TRUE"
 )
-add_compile_definitions(BUILD_APPLE_BUNDLE)
+list(APPEND _COMPILE_DEFINITIONS
+  BUILD_APPLE_BUNDLE
+)
 else()
 add_executable({{ project_name }}
   ${SOURCE} ${HEADERS}
@@ -172,7 +178,8 @@ if (MSVC)
 {%- endif %}
 
   # Silence MSVC CRT security warnings
-  add_compile_definitions(_CRT_SECURE_NO_WARNINGS
+  list(APPEND _COMPILE_DEFINITIONS
+    _CRT_SECURE_NO_WARNINGS
 {% for def in msvc.defs if msvc.defs %}
     {{ def }}
 {%- endfor %}
@@ -200,7 +207,7 @@ else()
   endif()
 endif()
 
-add_compile_definitions(
+list(APPEND _COMPILE_DEFINITIONS
   _PROJECT_SRC_PATH_="${CMAKE_SOURCE_DIR}"
 {%- for lib in libraries -%}
 {% for def in lib.defs if lib.defs %}
@@ -208,6 +215,8 @@ add_compile_definitions(
 {%- endfor %}
 {%- endfor %}
 )
+
+add_compile_definitions(${_COMPILE_DEFINITIONS})
 
 target_link_libraries({{ project_name }}
 {%- for lib in libraries -%}

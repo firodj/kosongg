@@ -282,6 +282,7 @@ void EngineBase::Run() {
 }
 
 void EngineBase::Init(std::vector<std::string> &args) {
+  (void)args;
   InitSDL();
   InitImGui();
 }

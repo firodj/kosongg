@@ -239,6 +239,9 @@ class LibraryManager:
             sets = [
                 dict(name='IMGUI_DIR', value='ext/imgui-docking'),
             ],
+            defs = [
+                'IMGUI_USER_CONFIG="../../kosongg/cpp/imconfig.h"',
+            ],
             include_dirs = [
                 '${IMGUI_DIR}',
                 '${IMGUI_DIR}/backends'
