@@ -73,9 +73,9 @@ class LibraryManager:
         self.useKeystoneEngine()
         self.useCapstoneEngine()
         self.useSDL2()
-        self.useImgui()
         self.useGlad()
         self.useGlm()
+        self.useImgui()
         self.useYaml()
         self.useEnet()
         self.useFmt()
@@ -87,6 +87,7 @@ class LibraryManager:
         self.useTinySoundFont()
         self.useDynalo()
         self.useHsCpp()
+        self.useIfd()
 
     def useUnicornEngine(self):
         self.append(dict(
@@ -236,24 +237,25 @@ class LibraryManager:
     def useImgui(self):
         self.append(dict(
             name = "imgui",
-            sets = [
-                dict(name='IMGUI_DIR', value='ext/imgui-docking'),
-            ],
+            path = "kosongg/cmake/imgui",
+            #sets = [
+            #    dict(name='IMGUI_DIR', value='ext/imgui-docking'),
+            #],
             defs = [
                 'IMGUI_USER_CONFIG="../../kosongg/cpp/imconfig.h"',
             ],
-            include_dirs = [
-                '${IMGUI_DIR}',
-                '${IMGUI_DIR}/backends'
-            ],
-            lib_sources = [
-                '${IMGUI_DIR}/imgui.cpp',
-                '${IMGUI_DIR}/imgui_demo.cpp',
-                '${IMGUI_DIR}/imgui_draw.cpp',
-                '${IMGUI_DIR}/imgui_tables.cpp',
-                '${IMGUI_DIR}/imgui_widgets.cpp',
-                '${VENDOR_DIR}/Component.cpp',
-            ],
+            #include_dirs = [
+            #    '${IMGUI_DIR}',
+            #    '${IMGUI_DIR}/backends'
+            #],
+            #lib_sources = [
+            #    '${IMGUI_DIR}/imgui.cpp',
+            #    '${IMGUI_DIR}/imgui_demo.cpp',
+            #    '${IMGUI_DIR}/imgui_draw.cpp',
+            #    '${IMGUI_DIR}/imgui_tables.cpp',
+            #    '${IMGUI_DIR}/imgui_widgets.cpp',
+            #    '${VENDOR_DIR}/Component.cpp',
+            #],
             link_libs = [
                 'imgui',
             ],
@@ -422,6 +424,21 @@ class LibraryManager:
             ],
             repo=dict(
                 url="https://github.com/firodj/hscpp.git",
+                path="ext/hscpp",
+                branch="firodj",
+            ),
+        ))
+
+    def useIfd(self):
+        self.append(dict(
+            name="ifd",
+            path="ext/ifd",
+            sets = [
+                dict(name="ifd_BUILD_EXAMPLES", value=False),
+            ],
+            link_libs = ['ifd'],
+            repo=dict(
+                url="https://github.com/firodj/ifd.git",
                 path="ext/hscpp",
                 branch="firodj",
             ),

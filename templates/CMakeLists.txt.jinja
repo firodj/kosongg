@@ -73,6 +73,7 @@ set(SOURCE
   ${VENDOR_DIR}/Engine.cpp
   ${VENDOR_DIR}/GLUtil.cpp
   ${VENDOR_DIR}/UtfConv.c
+  ${VENDOR_DIR}/Component.cpp
 
 {%- for lib in libraries -%}
 {% for src in lib.sources if lib.sources %}
@@ -90,6 +91,7 @@ set(HEADERS
   ${VENDOR_DIR}/kosongg/Engine.h
   ${VENDOR_DIR}/kosongg/GLUtil.h
   ${VENDOR_DIR}/kosongg/UtfConv.h
+  ${VENDOR_DIR}/kosongg/Component.h
 ## -- headers --
 {%- for hdr in headers %}
   {{ hdr }}
@@ -135,40 +137,6 @@ endif()
 
 source_group("Source Files" FILES ${SOURCE})
 source_group("Header Files" FILES ${HEADERS})
-
-# ImFileDialog (ifd)
-list(APPEND ifd_SOURCES
-  ${VENDOR_DIR}/ifd/ImFileDialog.cpp
-  ${VENDOR_DIR}/ifd/ImFileDialog.hpp
-  ${VENDOR_DIR}/ifd/ImFileDialogIconInfo.cpp
-  ${VENDOR_DIR}/ifd/ImFileDialogIconInfo.hpp
-  ${VENDOR_DIR}/ifd/DirectoryIterator.hpp
-  ${VENDOR_DIR}/ifd/DirectoryIterator.cpp
-  ${VENDOR_DIR}/UtfConv.c
-)
-
-if (APPLE)
-  list(APPEND ifd_SOURCES
-    ${VENDOR_DIR}/ifd/ImFileDialog_osx.mm
-    ${VENDOR_DIR}/ifd/ImFileDialog_osx.hpp
-  )
-endif()
-if (WIN32)
-  list(APPEND ifd_SOURCES
-    ${VENDOR_DIR}/ifd/ImFileDialog_win32.cpp
-    ${VENDOR_DIR}/ifd/ImFileDialog_win32.hpp
-  )
-endif()
-
-add_library(ifd STATIC ${ifd_SOURCES})
-target_link_libraries(ifd PRIVATE imgui)
-
-if (APPLE)
-  # Cocoa
-  find_library(COCOA_LIBRARY Cocoa)
-  find_library(APPKIT_LIB AppKit)
-  target_link_libraries(ifd PUBLIC ${COCOA_LIBRARY} ${APPKIT_LIB})
-endif()
 
 if (MSVC)
 {%- if msvc.link_libs %}
@@ -226,8 +194,14 @@ target_link_libraries({{ project_name }}
   {{ libname }}
 {%- endfor %}
 {%- endfor %}
-  ifd
 )
+
+if (APPLE)
+  # Cocoa
+  find_library(COCOA_LIBRARY Cocoa)
+  find_library(APPKIT_LIB AppKit)
+  target_link_libraries({{ project_name }} ${COCOA_LIBRARY} ${APPKIT_LIB})
+endif()
 
 if (BUILD_APPLE_BUNDLE)
 
