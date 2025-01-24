@@ -14,11 +14,15 @@ set(imgui_SOURCES
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h
 )
 
 add_library(imgui
     ${imgui_SOURCES}
 )
+add_compile_definitions(IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h")
+target_compile_definitions(imgui INTERFACE imgui_IMPORTS
+    IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h")
 
 if (BUILD_SHARED_LIBS)
     target_compile_definitions(imgui INTERFACE imgui_IMPORTS)
