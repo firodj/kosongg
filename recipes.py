@@ -439,7 +439,7 @@ class LibraryManager:
             link_libs = ['ifd'],
             repo=dict(
                 url="https://github.com/firodj/ifd.git",
-                path="ext/hscpp",
+                path="ext/ifd",
                 branch="firodj",
             ),
         ))
