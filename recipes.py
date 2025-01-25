@@ -238,24 +238,6 @@ class LibraryManager:
         self.append(dict(
             name = "imgui",
             path = "kosongg/cmake/imgui",
-            #sets = [
-            #    dict(name='IMGUI_DIR', value='ext/imgui-docking'),
-            #],
-            defs = [
-                'IMGUI_USER_CONFIG="../../kosongg/cpp/imconfig.h"',
-            ],
-            #include_dirs = [
-            #    '${IMGUI_DIR}',
-            #    '${IMGUI_DIR}/backends'
-            #],
-            #lib_sources = [
-            #    '${IMGUI_DIR}/imgui.cpp',
-            #    '${IMGUI_DIR}/imgui_demo.cpp',
-            #    '${IMGUI_DIR}/imgui_draw.cpp',
-            #    '${IMGUI_DIR}/imgui_tables.cpp',
-            #    '${IMGUI_DIR}/imgui_widgets.cpp',
-            #    '${VENDOR_DIR}/Component.cpp',
-            #],
             link_libs = [
                 'imgui',
             ],

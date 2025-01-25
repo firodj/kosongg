@@ -43,6 +43,10 @@ void GLAPIENTRY OnGLMessageCallback(GLenum source,
   const GLchar* message,
   const void* userParam)
 {
+  (void)source;
+  (void)length;
+  (void)userParam;
+
   std::cout << "---------------------opengl-callback-start------------" << std::endl;
   std::cout << "message: " << message << std::endl;
   std::cout << "type: ";

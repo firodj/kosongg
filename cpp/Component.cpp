@@ -36,6 +36,8 @@ void ImGui::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int ver
 }
 
 ImVec2 ImGui::CalcButtonSizeWithText(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width) {
+    (void)wrap_width;
+
     ImGuiContext& g = *ImGui::GetCurrentContext();
     const ImGuiStyle& style = g.Style;
     ImVec2 label_size = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash);
