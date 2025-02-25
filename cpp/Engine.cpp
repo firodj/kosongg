@@ -237,6 +237,11 @@ void EngineBase::Run() {
       if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(m_sdlWindow))
           done = true;
     }
+    if (SDL_GetWindowFlags(m_sdlWindow) & SDL_WINDOW_MINIMIZED)
+    {
+      SDL_Delay(10);
+      continue;
+    }
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -269,6 +274,8 @@ void EngineBase::Run() {
     }
 
     SDL_GL_SwapWindow(m_sdlWindow);
+
+    // if (power_saving_mode) SDL_WaitEvent(nullptr);
   }
 
   // Cleanup
