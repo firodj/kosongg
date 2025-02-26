@@ -423,6 +423,7 @@ class LibraryManager:
             sets = [
                 dict(name="ifd_BUILD_EXAMPLES", value=False),
             ],
+            defs = ["_USE_IFD_"],
             link_libs = ['ifd'],
             repo=dict(
                 url="https://github.com/firodj/ifd.git",
