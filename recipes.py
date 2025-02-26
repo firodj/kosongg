@@ -6,13 +6,16 @@ class LibraryManager:
         self.libraries = dict()
         self.project_path = project_path
         self.registers()
+        self.lib_orders = 0
 
     def append(self, libinfo):
         self.libraries[libinfo['name']] = libinfo
 
     def enable(self, name):
         if name in self.libraries:
+            self.lib_orders += 1
             self.libraries[name]['enable'] = True
+            self.libraries[name]['sort'] = self.lib_orders
         else:
             raise Exception("unknown lib name: " + name)
 
@@ -22,8 +25,10 @@ class LibraryManager:
         print("WARNING: chekcing unknown lib name: " + name)
         return None
 
-    def enable_libraries(self):
-        return list(filter(lambda libinfo: libinfo.get('enable') == True, self.libraries.values()))
+    def get_enabled_libraries(self):
+        libs = list(filter(lambda libinfo: libinfo.get('enable') == True, self.libraries.values()))
+        libs.sort(key=lambda libinfo: libinfo.get('sort'))
+        return libs
 
     def add(self, name):
         repo = self.libraries[name].get('repo')

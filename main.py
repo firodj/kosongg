@@ -36,7 +36,7 @@ def createCMake():
     print(project_path, project_name)
 
     template = jenv.get_template("CMakeLists.txt.jinja")
-    libs = libmgr.enable_libraries()
+    libs = libmgr.get_enabled_libraries()
 
     msvc = dict(
         defs = [],

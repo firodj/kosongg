@@ -2,6 +2,7 @@
 #include <thread>
 #include <mutex>
 #include <iostream>
+#include <filesystem>
 #include "imgui.h"
 #include <kosongg/INIReader.h>
 
@@ -61,9 +62,10 @@ void MainApp::RunImGui() {
   }
 }
 
-void MainApp::Init() {
+void MainApp::Init(std::vector<std::string> &args) {
   ReadIniConfig();
-  EngineBase::Init();
+  // InitSDL & InitImGui
+  EngineBase::Init(args);
 }
 
 void MainApp::ReadIniConfig() {
@@ -87,4 +89,17 @@ void MainApp::ReadIniConfig() {
   std::set<std::string> sections = reader.Sections();
   for (std::set<std::string>::iterator it = sections.begin(); it != sections.end(); ++it)
     std::cout << "Section:" << *it << std::endl;
+}
+
+std::string MainApp::GetResourcePath(const char *path, const char *file) {
+  std::filesystem::path spath(path);
+#ifdef BUILD_APPLE_BUNDLE
+  if (spath == "kosongg/fonts") spath = "fonts";
+#endif
+  std::filesystem::path sfile(file);
+  std::string res((spath / sfile).u8string());
+#ifdef BUILD_APPLE_BUNDLE
+  res = GetBundleResourcePath(res.c_str());
+#endif
+  return res;
 }

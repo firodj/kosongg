@@ -36,6 +36,8 @@ if not os.path.exists(build_path):
   os.mkdir(build_path)
 if not os.path.exists(os.path.join(build_path, "CMakeCache.txt")):
   subprocess.run("cmake -S . -B %s -G \"%s\"" % (build_name, generator_name), shell=True, check=True)
+if generator_name == "Ninja Multi-Config" and not os.path.exists(os.path.join(build_path, "build-%s.ninja" % (build_mode,))):
+  subprocess.run("cmake -S . -B %s" % (build_name,), shell=True, check=True)
 
 shellcmd = "cmake --build %s --target \"%s\" --config %s" % (build_name, target, build_mode)
 print(shellcmd)

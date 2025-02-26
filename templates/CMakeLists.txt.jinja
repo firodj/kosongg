@@ -25,6 +25,9 @@ endif()
 {%- for opt in lib.options if lib.options %}
 option("{{ opt.name }}" "{{ opt.help }}" {{ opt.value | value_format }})
 {%- endfor %}
+{%- endfor %}
+
+{%- for lib in libraries -%}
 {%- for req in lib.requires if lib.requires %}
 find_package({{ req }} REQUIRED)
 {%- endfor %}
