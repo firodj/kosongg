@@ -17,6 +17,8 @@
 #include "hscpp/Util.h"
 #include "hscpp/mem/Ref.h"
 #include "hscpp/mem/MemoryManager.h"
+
+#include "Globals.hpp"
 #endif
 
 static std::unique_ptr<MainApp> g_mainapp;
@@ -199,6 +201,15 @@ void MainApp::Init(std::vector<std::string> &args) {
   ifd::FileDialog::Instance().CreateTexture = ifd::openglCreateTexture;
   ifd::FileDialog::Instance().DeleteTexture = ifd::openglDeleteTexture;
 #endif
+}
+
+void MainApp::Clean() {
+#ifdef _USE_HSCPP_
+  m_impl->globals.reset();
+  m_impl->swapper.reset();
+#endif
+
+  EngineBase::Clean();
 }
 
 void MainApp::ReadIniConfig() {

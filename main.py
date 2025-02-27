@@ -94,6 +94,20 @@ def createStarter():
         with open(mainapp_hpp_path, 'w') as f:
             f.write(contents)
 
+    mainapp_hpp_path = os.path.join(project_path, 'src/MainApp.hpp')
+    if not os.path.exists(mainapp_hpp_path):
+        template = jenv.get_template("MainApp.hpp.jinja")
+        contents = template.render()
+        with open(mainapp_hpp_path, 'w') as f:
+            f.write(contents)
+
+    globals_hpp_path = os.path.join(project_path, 'src/Globals.hpp')
+    if not os.path.exists(globals_hpp_path):
+        template = jenv.get_template("Globals.hpp.jinja")
+        contents = template.render()
+        with open(globals_hpp_path, 'w') as f:
+            f.write(contents)
+
     headers.append("src/MainApp.hpp")
 
 def checkRunPy():

@@ -1,0 +1,22 @@
+#pragma once
+
+#include <functional>
+
+#include "hscpp/module/GlobalUserData.h"
+#include "hscpp/mem/Ref.h"
+#include "hscpp/mem/MemoryManager.h"
+
+struct ImGuiContext;
+
+class Globals
+{
+public:
+    static Globals* GetInstance();
+    static Globals* Resolve() {
+        return hscpp::GlobalUserData::GetAs<Globals>();
+    }
+
+    ImGuiContext* pImGuiContext{nullptr};
+    hscpp::mem::MemoryManager *pMemoryManager{nullptr};
+    bool showHotswapStatus{true};
+};
