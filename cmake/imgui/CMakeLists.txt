@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 17)
 
 set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/ext/imgui-docking")
-message("IMGUI_DIR = ${IMGUI_DIR}")
+message(STATUS "IMGUI_DIR = ${IMGUI_DIR}")
 set(IMGUI_DIR "${IMGUI_DIR}" PARENT_SCOPE)
 
 set(imgui_SOURCES

@@ -161,7 +161,6 @@ class LibraryManager:
 
         self.append(dict(
             name = "sdl2",
-            include_dirs = ['${SDL2_SOURCE_DIR}/include'],
             sets = [
                 dict(name="SDL_TEST", value=False),
                 dict(name="SDL2_DISABLE_SDL2MAIN", value=True)
