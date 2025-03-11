@@ -4,6 +4,7 @@ project(imgui)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 17)
 
+set(THIS_VENDOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/ext/imgui-docking")
 message(STATUS "IMGUI_DIR = ${IMGUI_DIR}")
 set(IMGUI_DIR "${IMGUI_DIR}" PARENT_SCOPE)
