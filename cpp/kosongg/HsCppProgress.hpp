@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <array>
-#include <hscpp/Hotswapper.h>
 
 struct HsCppProgress {
 	const char * lastCompilingText;
@@ -13,11 +12,11 @@ struct HsCppProgress {
 	std::chrono::steady_clock::time_point startCompileTime;
 #endif
 	std::chrono::duration<float, std::milli> lastElapsedCompileTime;
-	hscpp::Hotswapper::UpdateResult lastUpdateResult;
+	int lastUpdateResult;
 
 	HsCppProgress() {
 		lastCompilingText = "Ready";
 		lastCompilingColor = {0, 0, 0};
-		lastUpdateResult = hscpp::Hotswapper::UpdateResult::Idle;
+		lastUpdateResult = 0;
 	}
 };
