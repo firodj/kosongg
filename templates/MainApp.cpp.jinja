@@ -73,7 +73,7 @@ void MainApp::UpdateHsCpp() {
 			globals->pHsCppProgress->lastElapsedCompileTime = std::chrono::high_resolution_clock::now() - globals->pHsCppProgress->startCompileTime;
 			break;
 		case hscpp::Hotswapper::UpdateResult::StartedCompiling:
-		globals->pHsCppProgress->startCompileTime = std::chrono::high_resolution_clock::now();
+			globals->pHsCppProgress->startCompileTime = std::chrono::high_resolution_clock::now();
 			break;
 		case hscpp::Hotswapper::UpdateResult::PerformedSwap:
 			globals->pHsCppProgress->lastCompilingText = "PerformedSwap";
@@ -84,11 +84,11 @@ void MainApp::UpdateHsCpp() {
 			break;
 		default:
 			switch (globals->pHsCppProgress->lastUpdateResult) {
-				case hscpp::Hotswapper::UpdateResult::Compiling:
+				case (int)hscpp::Hotswapper::UpdateResult::Compiling:
 					globals->pHsCppProgress->lastCompilingColor = {172, 0, 0};
 					globals->pHsCppProgress->lastCompilingText = "Error";
 					break;
-				case hscpp::Hotswapper::UpdateResult::PerformedSwap:
+				case (int)hscpp::Hotswapper::UpdateResult::PerformedSwap:
 					globals->pHsCppProgress->lastCompilingColor = {0, 172, 0};
 					globals->pHsCppProgress->lastCompilingText = "Success";
 					break;
@@ -96,7 +96,7 @@ void MainApp::UpdateHsCpp() {
 					break;
 			};
 	};
-	globals->pHsCppProgress->lastUpdateResult = updateResult;
+	globals->pHsCppProgress->lastUpdateResult = (int)updateResult;
 #endif
 }
 
@@ -142,16 +142,26 @@ void MainApp::Init(std::vector<std::string> &args) {
 	m_impl->swapper->EnableFeature(hscpp::Feature::DependentCompilation);
 #ifdef _WIN32
 	m_impl->swapper->SetVar("os", "Windows");
+#elif defined(__APPLE__)
+	m_impl->swapper->SetVar("os", "Darwin");
 #else
-	m_impl->swapper->SetVar("os", "Posix");
+	m_impl->swapper->SetVar("os", "Linux");
 #endif
 	m_impl->swapper->SetVar("projPath", projPath.u8string());
+
+#ifdef _USE_IFD_
+	m_impl->swapper->SetVar("use_ifd", true);
+	m_impl->swapper->AddPreprocessorDefinition("_USE_IFD_");
+#else
+ 	m_impl->swapper->SetVar("use_ifd", false);
+#endif
 
 	m_impl->swapper->AddSourceDirectory(projPath / "src");
 	//m_impl->swapper->AddIncludeDirectory(projPath / "src" );
 
 	auto buildPath = hscpp::util::GetHscppBuildPath();
 	m_impl->swapper->SetVar("buildPath", buildPath.u8string());
+	m_impl->swapper->AddPreprocessorDefinition("_USE_HSCPP_");
 #ifdef IMGUI_USER_CONFIG
 	std::string imgui_defs = "IMGUI_USER_CONFIG=\\\"" + hscpp::fs::path(IMGUI_USER_CONFIG).u8string() + "\\\"";
 	//std::string imgui_defs = fmt::format("IMGUI_USER_CONFIG=\\\"{}\\\"", hscpp::fs::path(IMGUI_USER_CONFIG).u8string())
