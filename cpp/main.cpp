@@ -8,12 +8,12 @@ int _main(int argc, char ** argv)
 {
 	std::vector< std::string > args( argv, argv + argc );
 
-    MainApp *mainApp = MainApp::GetInstance();
-    mainApp->Init(args);
-    mainApp->Run();
-    mainApp->Clean();
+	MainApp *mainApp = MainApp::GetInstance();
+	mainApp->Init(args);
+	mainApp->Run();
+	mainApp->Clean();
 
-    return 0;
+	return 0;
 }
 
 // FROM DIRENT

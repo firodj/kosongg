@@ -9,22 +9,23 @@ std::string GetBundleResourcePath(const char * path);
 
 class MainApp: public kosongg::EngineBase {
 private:
-    struct Impl;
-    std::unique_ptr<Impl> m_impl{};
+	struct Impl;
+	std::unique_ptr<Impl> m_impl{};
 
 protected:
-    MainApp(/* dependency */);
-    void RunImGui() override;
-    void ReadIniConfig();
+	MainApp(/* dependency */);
+	void RunImGui() override;
+	void ReadIniConfig();
+	void UpdateHsCpp();
 
 public:
-    MainApp(MainApp &other) = delete;
-    ~MainApp();
-    void operator=(const MainApp &) = delete;
+	MainApp(MainApp &other) = delete;
+	~MainApp();
+	void operator=(const MainApp &) = delete;
 
-    static MainApp *GetInstance(/* dependency */);
+	static MainApp *GetInstance(/* dependency */);
 
-    void Init(std::vector<std::string> &args) override;
-    void Clean() override;
-    std::string GetResourcePath(const char *path, const char *file) override;
+	void Init(std::vector<std::string> &args) override;
+	void Clean() override;
+	std::string GetResourcePath(const char *path, const char *file) override;
 };

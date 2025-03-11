@@ -1,22 +1,46 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
+#ifdef _USE_HSCPP_
 #include "hscpp/module/GlobalUserData.h"
 #include "hscpp/mem/Ref.h"
 #include "hscpp/mem/MemoryManager.h"
+#endif
 
 struct ImGuiContext;
+class MainWidget;
+struct HsCppProgress;
 
 class Globals
 {
 public:
-    static Globals* GetInstance();
-    static Globals* Resolve() {
-        return hscpp::GlobalUserData::GetAs<Globals>();
-    }
+	static Globals* Resolve() {
+#ifdef _USE_HSCPP_
+		return hscpp::GlobalUserData::GetAs<Globals>();
+#else
+		return m_g;
+#endif
+	}
 
-    ImGuiContext* pImGuiContext{nullptr};
-    hscpp::mem::MemoryManager *pMemoryManager{nullptr};
-    bool showHotswapStatus{true};
+	ImGuiContext* pImGuiContext{nullptr};
+#ifdef _USE_HSCPP_
+	hscpp::mem::MemoryManager *pMemoryManager{nullptr};
+	hscpp::mem::UniqueRef<MainWidget> pMainWidget;
+	std::unique_ptr<HsCppProgress> pHsCppProgress;
+#else
+	std::unique_ptr<MainWidget> pMainWidget;
+#endif
+	// hscpp::mem::UniqueRef<CustomControls> pCustomControls;
+
+	bool showHsCppProgress{true};
+	float toolbarSize{50};
+	float menuBarHeight{0};
+
+#ifndef _USE_HSCPP_
+	static void SetGlobalUserData(Globals *g) { m_g = g; }
+protected:
+	static Globals *m_g;
+#endif
 };

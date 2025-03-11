@@ -17,233 +17,214 @@
 #include "hscpp/Util.h"
 #include "hscpp/mem/Ref.h"
 #include "hscpp/mem/MemoryManager.h"
-
-#include "Globals.hpp"
+#include "kosongg/HsCppProgress.hpp"
 #endif
 
-static std::unique_ptr<MainApp> g_mainapp;
+#include "Globals.hpp"
+#include "MainWidget.hpp"
 
+static std::unique_ptr<MainApp> g_mainapp;
 static std::mutex g_mtxMainapp;
 
 struct MainApp::Impl {
+	std::unique_ptr<Globals> globals;
 #ifdef _USE_HSCPP_
-  std::unique_ptr<hscpp::Hotswapper> swapper;
-  std::unique_ptr<Globals> globals;
-  hscpp::mem::UniqueRef<hscpp::mem::MemoryManager> memoryManager;
+	std::unique_ptr<hscpp::Hotswapper> swapper;
+	hscpp::mem::UniqueRef<hscpp::mem::MemoryManager> memoryManager;
 #endif
-  /* private implementations */
+	/* private implementations */
 };
 
+#ifndef _USE_HSCPP_
+Globals * Globals::m_g;
+#endif
+
 MainApp *MainApp::GetInstance(/* dependency */) {
-  std::lock_guard<std::mutex> lock(g_mtxMainapp);
-  if (g_mainapp == nullptr) {
-    struct MkUniqEnablr : public MainApp {};
-    g_mainapp = std::make_unique<MkUniqEnablr>(/* dependency */);
-  }
-  return g_mainapp.get();
+	std::lock_guard<std::mutex> lock(g_mtxMainapp);
+	if (g_mainapp == nullptr) {
+		struct MkUniqEnablr : public MainApp {};
+		g_mainapp = std::make_unique<MkUniqEnablr>(/* dependency */);
+	}
+	return g_mainapp.get();
 }
 
 MainApp::MainApp(/* dependency */): kosongg::EngineBase(/* dependency */) {
-  m_impl = std::make_unique<Impl>();
-  m_windowTitle = "{{ project_name }}";
+	m_impl = std::make_unique<Impl>();
+	m_windowTitle = "{{ project_name }}";
 }
 
 MainApp::~MainApp() {
 }
 
+void MainApp::UpdateHsCpp() {
+	Globals *globals = Globals::Resolve();
+
+#ifdef _USE_HSCPP_
+	auto updateResult = m_impl->swapper->Update();
+
+	if (!globals->pHsCppProgress) {
+		globals->pHsCppProgress = std::make_unique<HsCppProgress>();
+	}
+
+	switch (updateResult) {
+		case hscpp::Hotswapper::UpdateResult::Compiling:
+			globals->pHsCppProgress->lastCompilingText = "Compiling";
+			globals->pHsCppProgress->lastCompilingColor = {222, 222, 0};
+			globals->pHsCppProgress->lastElapsedCompileTime = std::chrono::high_resolution_clock::now() - globals->pHsCppProgress->startCompileTime;
+			break;
+		case hscpp::Hotswapper::UpdateResult::StartedCompiling:
+		globals->pHsCppProgress->startCompileTime = std::chrono::high_resolution_clock::now();
+			break;
+		case hscpp::Hotswapper::UpdateResult::PerformedSwap:
+			globals->pHsCppProgress->lastCompilingText = "PerformedSwap";
+			break;
+		case hscpp::Hotswapper::UpdateResult::FailedSwap:
+			globals->pHsCppProgress->lastCompilingColor = {172, 0, 0};
+			globals->pHsCppProgress->lastCompilingText = "FailedSwap";
+			break;
+		default:
+			switch (globals->pHsCppProgress->lastUpdateResult) {
+				case hscpp::Hotswapper::UpdateResult::Compiling:
+					globals->pHsCppProgress->lastCompilingColor = {172, 0, 0};
+					globals->pHsCppProgress->lastCompilingText = "Error";
+					break;
+				case hscpp::Hotswapper::UpdateResult::PerformedSwap:
+					globals->pHsCppProgress->lastCompilingColor = {0, 172, 0};
+					globals->pHsCppProgress->lastCompilingText = "Success";
+					break;
+				default:
+					break;
+			};
+	};
+	globals->pHsCppProgress->lastUpdateResult = updateResult;
+#endif
+}
+
 void MainApp::RunImGui() {
-#ifdef _USE_HSCPP_
-  Globals *globals = Globals::Resolve();
-  static hscpp::Hotswapper::UpdateResult lastUpdateResult = hscpp::Hotswapper::UpdateResult::Idle;
-  auto updateResult = m_impl->swapper->Update();
+	Globals *globals = Globals::Resolve();
 
-  static const char *lastCompilingText = "Ready";
-  static ImColor lastCompilingColor = ImColor{0, 0, 0};
-  static std::chrono::steady_clock::time_point startCompileTime;
-  static std::chrono::duration<float, std::milli> lastElapsedCompileTime;
+	UpdateHsCpp();
 
-  switch (updateResult) {
-    case hscpp::Hotswapper::UpdateResult::Compiling:
-      lastCompilingText = "Compiling";
-      lastCompilingColor = ImColor{222, 222, 0};
-      lastElapsedCompileTime = std::chrono::high_resolution_clock::now() - startCompileTime;
-      break;
-    case hscpp::Hotswapper::UpdateResult::StartedCompiling:
-      startCompileTime = std::chrono::high_resolution_clock::now();
-      break;
-    case hscpp::Hotswapper::UpdateResult::PerformedSwap:
-      lastCompilingText = "PerformedSwap";
-      break;
-    case hscpp::Hotswapper::UpdateResult::FailedSwap:
-      lastCompilingColor = ImColor{172, 0, 0};
-      lastCompilingText = "FailedSwap";
-      break;
-    default:
-      switch (lastUpdateResult) {
-        case hscpp::Hotswapper::UpdateResult::Compiling:
-          lastCompilingColor = ImColor{172, 0, 0};
-          lastCompilingText = "Error";
-          break;
-        case hscpp::Hotswapper::UpdateResult::PerformedSwap:
-          lastCompilingColor = ImColor{0, 172, 0};
-          lastCompilingText = "Success";
-          break;
-        default:
-          break;
-      };
-  };
-  lastUpdateResult = updateResult;
-#endif
-
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
-  ImColor clearColor(m_clearColor);
-
-  // 1. Show the big demo window and another window
-  EngineBase::RunImGui();
-
-  // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-  {
-    static float f = 0.0f;
-    static int counter = 0;
-
-    ImGui::Begin("Welcome to {{ project_name }}!");        // Create a window called "Hello, world!" and append into it.
-
-    ImGui::Text("This is some useful text.");              // Display some text (you can use a format strings too)
-    ImGui::Checkbox("Demo Window", &m_showDemoWindow);      // Edit bools storing our window open/close state
-    ImGui::Checkbox("Another Window", &m_showAnotherWindow);
-
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);           // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clearColor.Value); // Edit 3 floats representing a color
-
-    if (ImGui::Button("Button"))                           // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::End();
-  }
-
-#ifdef _USE_HSCPP_
-  if (globals->showHotswapStatus) {
-    if (ImGui::Begin("Hot-swap Compiler", &globals->showHotswapStatus)) {
-      ImGui::TextColored(lastCompilingColor, "Status %s %.2f ms", lastCompilingText, lastElapsedCompileTime.count());
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    }
-    ImGui::End();
-  }
-#endif
+	globals->pMainWidget->Update();
 
 #ifdef _USE_IFD_
-  if (ifd::FileDialog::Instance().IsDone("MultiFileOpenDialog")) {
-    if (ifd::FileDialog::Instance().HasResult()) {
-            const std::vector<std::filesystem::path>& res = ifd::FileDialog::Instance().GetResults();
-            for (const auto& r : res) { // MidiFileOpenDialog supports multiselection
-              // TODO: handle each files
-              std::cerr << "open dialog: " << r.u8string() << std::endl;
-            }
-    }
-    ifd::FileDialog::Instance().Close();
-  }
+	if (ifd::FileDialog::Instance().IsDone("MultiFileOpenDialog")) {
+		if (ifd::FileDialog::Instance().HasResult()) {
+						const std::vector<std::filesystem::path>& res = ifd::FileDialog::Instance().GetResults();
+						for (const auto& r : res) { // MidiFileOpenDialog supports multiselection
+							// TODO: handle each files
+							std::cerr << "open dialog: " << r.u8string() << std::endl;
+						}
+		}
+		ifd::FileDialog::Instance().Close();
+	}
 #endif
 }
 
 void MainApp::Init(std::vector<std::string> &args) {
-  ReadIniConfig();
-  // InitSDL & InitImGui
-  EngineBase::Init(args);
+	ReadIniConfig();
+	// InitSDL & InitImGui
+	EngineBase::Init(args);
+
+	m_impl->globals = std::make_unique<Globals>();
+	m_impl->globals->pImGuiContext = ImGui::GetCurrentContext();
 
 #ifdef _USE_HSCPP_
-  auto projPath = hscpp::fs::canonical( hscpp::fs::path(_PROJECT_SRC_PATH_) );
+	auto projPath = hscpp::fs::canonical( hscpp::fs::path(_PROJECT_SRC_PATH_) );
 
-  m_impl->globals = std::make_unique<Globals>();
+	auto swapperConfig = std::make_unique<hscpp::Config>();
+	swapperConfig->compiler.projPath = projPath.u8string();
+	swapperConfig->compiler.ninja = true;
+	std::cerr << "ninja path = " << swapperConfig->compiler.ninjaExecutable << std::endl;
 
-  auto swapperConfig = std::make_unique<hscpp::Config>();
-  swapperConfig->compiler.projPath = projPath.u8string();
-  swapperConfig->compiler.ninja = true;
-  std::cerr << "ninja path = " << swapperConfig->compiler.ninjaExecutable << std::endl;
-
-  m_impl->swapper = std::make_unique<hscpp::Hotswapper>(std::move(swapperConfig));
-  m_impl->swapper->EnableFeature(hscpp::Feature::Preprocessor);
-  m_impl->swapper->EnableFeature(hscpp::Feature::DependentCompilation);
+	m_impl->swapper = std::make_unique<hscpp::Hotswapper>(std::move(swapperConfig));
+	m_impl->swapper->EnableFeature(hscpp::Feature::Preprocessor);
+	m_impl->swapper->EnableFeature(hscpp::Feature::DependentCompilation);
 #ifdef _WIN32
-  m_impl->swapper->SetVar("os", "Windows");
+	m_impl->swapper->SetVar("os", "Windows");
 #else
-  m_impl->swapper->SetVar("os", "Posix");
+	m_impl->swapper->SetVar("os", "Posix");
 #endif
-  m_impl->swapper->SetVar("projPath", projPath.u8string());
+	m_impl->swapper->SetVar("projPath", projPath.u8string());
 
-  m_impl->swapper->AddSourceDirectory(projPath / "src");
-  //m_impl->swapper->AddIncludeDirectory(projPath / "src" );
+	m_impl->swapper->AddSourceDirectory(projPath / "src");
+	//m_impl->swapper->AddIncludeDirectory(projPath / "src" );
 
-  auto buildPath = hscpp::util::GetHscppBuildPath();
-  m_impl->swapper->SetVar("buildPath", buildPath.u8string());
+	auto buildPath = hscpp::util::GetHscppBuildPath();
+	m_impl->swapper->SetVar("buildPath", buildPath.u8string());
 #ifdef IMGUI_USER_CONFIG
-  m_impl->swapper->AddPreprocessorDefinition(fmt::format("IMGUI_USER_CONFIG=\\\"{}\\\"", hscpp::fs::path(IMGUI_USER_CONFIG).u8string()));
+	std::string imgui_defs = "IMGUI_USER_CONFIG=\\\"" + hscpp::fs::path(IMGUI_USER_CONFIG).u8string() + "\\\"";
+	//std::string imgui_defs = fmt::format("IMGUI_USER_CONFIG=\\\"{}\\\"", hscpp::fs::path(IMGUI_USER_CONFIG).u8string())
+	m_impl->swapper->AddPreprocessorDefinition(imgui_defs);
 #endif
 #ifdef imgui_IMPORTS
-  m_impl->swapper->AddPreprocessorDefinition("imgui_IMPORTS"); // if BUILD_SHARED
+	m_impl->swapper->AddPreprocessorDefinition("imgui_IMPORTS"); // if BUILD_SHARED
 #endif
 
-  hscpp::mem::MemoryManager::Config config;
-  config.pAllocationResolver = m_impl->swapper->GetAllocationResolver();
-  m_impl->memoryManager = hscpp::mem::MemoryManager::Create(config);
-  m_impl->swapper->SetAllocator(&m_impl->memoryManager);
+	hscpp::mem::MemoryManager::Config config;
+	config.pAllocationResolver = m_impl->swapper->GetAllocationResolver();
+	m_impl->memoryManager = hscpp::mem::MemoryManager::Create(config);
+	m_impl->swapper->SetAllocator(&m_impl->memoryManager);
 
-  m_impl->swapper->SetGlobalUserData(m_impl->globals.get());
+	m_impl->swapper->SetGlobalUserData(m_impl->globals.get());
 
-  m_impl->globals->pMemoryManager = &m_impl->memoryManager;
-  m_impl->globals->pImGuiContext = ImGui::GetCurrentContext();
+	m_impl->globals->pMemoryManager = &m_impl->memoryManager;
+	m_impl->globals->pMainWidget = m_impl->memoryManager->Allocate<MainWidget>();
+
+#else
+	Globals::SetGlobalUserData(m_impl->globals.get());
+
+	m_impl->globals->pMainWidget = std::make_unique<MainWidget>();
 #endif
 
 #ifdef _USE_IFD_
-  // ImFileDialog requires you to set the CreateTexture and DeleteTexture
-  ifd::FileDialog::Instance().CreateTexture = ifd::openglCreateTexture;
-  ifd::FileDialog::Instance().DeleteTexture = ifd::openglDeleteTexture;
+	// ImFileDialog requires you to set the CreateTexture and DeleteTexture
+	ifd::FileDialog::Instance().CreateTexture = ifd::openglCreateTexture;
+	ifd::FileDialog::Instance().DeleteTexture = ifd::openglDeleteTexture;
 #endif
 }
 
 void MainApp::Clean() {
-#ifdef _USE_HSCPP_
-  m_impl->globals.reset();
-  m_impl->swapper.reset();
-#endif
+	#ifdef _USE_HSCPP_
+		m_impl->globals.reset();
+		m_impl->swapper.reset();
+	#endif
 
-  EngineBase::Clean();
+	EngineBase::Clean();
 }
 
 void MainApp::ReadIniConfig() {
-  const char * homepath = nullptr;
+	const char * homepath = nullptr;
 #ifdef _WIN32
-  homepath = std::getenv("USERPROFILE");
+	homepath = std::getenv("USERPROFILE");
 #else
-  homepath = std::getenv("HOME");
+	homepath = std::getenv("HOME");
 #endif
 
-  std::cout << "Home:" << homepath << std::endl;
+	std::cout << "Home:" << homepath << std::endl;
 
-  const char * inifilename = "{{ project_name }}.ini";
-  INIReader reader(inifilename);
+	const char * inifilename = "{{ project_name }}.ini";
+	INIReader reader(inifilename);
 
-  if (reader.ParseError() < 0) {
-    std::cout << "Can't load:" << inifilename << std::endl;
-    return;
-  }
+	if (reader.ParseError() < 0) {
+		std::cout << "Can't load:" << inifilename << std::endl;
+		return;
+	}
 
-  std::set<std::string> sections = reader.Sections();
-  for (std::set<std::string>::iterator it = sections.begin(); it != sections.end(); ++it)
-    std::cout << "Section:" << *it << std::endl;
+	std::set<std::string> sections = reader.Sections();
+	for (std::set<std::string>::iterator it = sections.begin(); it != sections.end(); ++it)
+		std::cout << "Section:" << *it << std::endl;
 }
 
 std::string MainApp::GetResourcePath(const char *path, const char *file) {
-  std::filesystem::path spath(path);
+	std::filesystem::path spath(path);
 #ifdef BUILD_APPLE_BUNDLE
-  if (spath == "kosongg/fonts") spath = "fonts";
+	if (spath == "kosongg/fonts") spath = "fonts";
 #endif
-  std::filesystem::path sfile(file);
-  std::string res((spath / sfile).u8string());
+	std::filesystem::path sfile(file);
+	std::string res((spath / sfile).u8string());
 #ifdef BUILD_APPLE_BUNDLE
-  res = GetBundleResourcePath(res.c_str());
+	res = GetBundleResourcePath(res.c_str());
 #endif
-  return res;
+	return res;
 }
