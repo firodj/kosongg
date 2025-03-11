@@ -19,11 +19,7 @@ protected:
   SDL_GLContext m_glContext;
   const char *  m_windowTitle;
   const char *  m_glslVersionStr;
-  bool          m_showDemoWindow;
-  bool          m_showToolMetrics;
-  bool          m_showToolDebugLog;
-  bool          m_showAnotherWindow;
-  bool          m_showToolAbout;
+
   unsigned int  m_clearColor;
   float         m_hidpiX;
   float         m_hidpiY;
@@ -38,7 +34,7 @@ protected:
 
   void InitSDL();
   void InitImGui();
-  virtual void RunImGui();
+  virtual void RunImGui() = 0;
   bool BeginDockSpace();
   void EndDockSpace();
   bool BeginToolBar();

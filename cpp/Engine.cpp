@@ -24,11 +24,6 @@ namespace kosongg {
 
 EngineBase::EngineBase(/* dependency */) {
   m_windowTitle = "My SDL Empty Window";
-  m_showDemoWindow = true;
-  m_showAnotherWindow = false;
-  m_showToolMetrics = false;
-  m_showToolDebugLog = false;
-  m_showToolAbout = false;
   m_clearColor = IM_COL32(255,255,255,255); // ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 }
 
@@ -178,39 +173,6 @@ void EngineBase::InitImGui() {
   IM_ASSERT(fa_font != nullptr);
 
   m_toolBarSize = -1;
-}
-
-void EngineBase::RunImGui() {
-  // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-  if (m_showDemoWindow)
-    ImGui::ShowDemoWindow(&m_showDemoWindow);
-  if (m_showToolMetrics)
-    ImGui::ShowMetricsWindow(&m_showToolMetrics);
-  if (m_showToolDebugLog)
-    ImGui::ShowDebugLogWindow(&m_showToolDebugLog);
-  if (m_showToolAbout)
-    ImGui::ShowAboutWindow(&m_showToolAbout);
-
-  // 3. Show another simple window.
-  if (m_showAnotherWindow)
-  {
-    ImGui::Begin("Another Window", &m_showAnotherWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-    ImGui::Text("Hello from another window!");
-
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 4.0f));
-    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor(0x00, 0x7A, 0xFF));
-    ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(1.0f, 1.0f, 1.0f));
-    if (ImGui::ColoredButtonV1("Close Me"))
-        m_showAnotherWindow = false;
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-    }
-    ImGui::PopStyleColor(2);
-    ImGui::PopStyleVar(2);
-
-    ImGui::End();
-  }
 }
 
 void EngineBase::Run() {

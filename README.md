@@ -39,3 +39,6 @@ set(SDL2_DIR ${sdl2_SOURCE_DIR})
 set(IMGUI_DIR ${imgui-docking_SOURCE_DIR})
 
 ```
+On Linux:
+
+cmake -DUSE_SYSTEM_LIBSDL2=OFF -DCMAKE_BUILD_TYPE=Release ..

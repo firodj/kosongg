@@ -68,6 +68,15 @@ def createCMake():
     with open(os.path.join(project_path, 'CMakeLists.txt'), 'w') as f:
         f.write(contents)
 
+def copyTemplate(src, dst, *args, **kwargs):
+    dst_path = os.path.join(project_path, dst)
+    if not os.path.exists(dst_path):
+        template = jenv.get_template(src)
+        contents = template.render(*args, **kwargs)
+        with open(dst_path, 'w') as f:
+            f.write(contents)
+    return dst_path
+
 def createStarter():
     cmakelists_path = os.path.join(project_path, 'CMakeLists.txt')
     if os.path.exists(cmakelists_path): return
@@ -78,59 +87,23 @@ def createStarter():
         print("DEBUG:", e)
 
     sources.append("src/MainApp.cpp")
-
-    mainapp_cpp_path = os.path.join(project_path, 'src/MainApp.cpp')
-    if not os.path.exists(mainapp_cpp_path):
-        template = jenv.get_template("MainApp.cpp.jinja")
-        contents = template.render(project_name=project_name,)
-        with open(mainapp_cpp_path, 'w') as f:
-            f.write(contents)
-
-
-    mainapp_hpp_path = os.path.join(project_path, 'src/MainApp.hpp')
-    if not os.path.exists(mainapp_hpp_path):
-        template = jenv.get_template("MainApp.hpp.jinja")
-        contents = template.render()
-        with open(mainapp_hpp_path, 'w') as f:
-            f.write(contents)
-
-    mainapp_hpp_path = os.path.join(project_path, 'src/MainApp.hpp')
-    if not os.path.exists(mainapp_hpp_path):
-        template = jenv.get_template("MainApp.hpp.jinja")
-        contents = template.render()
-        with open(mainapp_hpp_path, 'w') as f:
-            f.write(contents)
-
-    globals_hpp_path = os.path.join(project_path, 'src/Globals.hpp')
-    if not os.path.exists(globals_hpp_path):
-        template = jenv.get_template("Globals.hpp.jinja")
-        contents = template.render()
-        with open(globals_hpp_path, 'w') as f:
-            f.write(contents)
-
     headers.append("src/MainApp.hpp")
 
-def checkRunPy():
-    run_py_path = os.path.join(project_path, 'run.py')
-    if not os.path.exists(run_py_path):
-        template = jenv.get_template("run.py.jinja")
-        contents = template.render(project_name=project_name,)
-        with open(run_py_path, 'w') as f:
-            f.write(contents)
+    copyTemplate("MainApp.cpp.jinja", "src/MainApp.cpp", project_name=project_name)
+    copyTemplate("MainApp.hpp.jinja", "src/MainApp.hpp")
+    copyTemplate("Globals.hpp.jinja", "src/Globals.hpp")
 
-        st = os.stat(run_py_path)
-        os.chmod(run_py_path, st.st_mode | stat.S_IEXEC)
+def checkRunPy():
+    dst = copyTemplate("run.py.jinja", "run.py", project_name=project_name)
+    if dst:
+        st = os.stat(dst)
+        os.chmod(dst, st.st_mode | stat.S_IEXEC)
 
 def checkInfoPlist():
-    info_py_path = os.path.join(project_path, 'Info.plist.in')
-    if not os.path.exists(info_py_path):
-        template = jenv.get_template("Info.plist.in.jinja")
-        contents = template.render(
+    copyTemplate("Info.plist.in.jinja", "Info.plist.in", 
             project_name=project_name,
             bundle_reverse_domain=bundle_reverse_domain,
         )
-        with open(info_py_path, 'w') as f:
-            f.write(contents)
 
 def checkExt():
     ext_path = project_path + '/ext'
@@ -202,12 +175,7 @@ def getExistingSources():
 def checkConfig():
     global bundle_reverse_domain
     config = configparser.ConfigParser()
-    cfgpath = os.path.join(project_path, 'kosongg.ini')
-    if not os.path.exists(cfgpath):
-        template = jenv.get_template("kosongg.ini.jinja")
-        contents = template.render()
-        with open(cfgpath, 'w') as f:
-            f.write(contents)
+    cfgpath = copyTemplate("kosongg.ini.jinja", 'kosongg.ini')
     config.read(cfgpath)
 
     adds = []
@@ -227,19 +195,9 @@ def checkVscode():
     if not os.path.exists(vscode_path):
         os.mkdir(vscode_path)
 
-    cprop_path = os.path.join(vscode_path, 'c_cpp_properties.json')
-    if not os.path.exists(cprop_path):
-        template = jenv.get_template("c_cpp_properties.json.jinja")
-        contents = template.render(project_name=project_name)
-        with open(cprop_path, 'w') as f:
-            f.write(contents)
+    copyTemplate("c_cpp_properties.json.jinja", '.vscode/c_cpp_properties.json', project_name=project_name)
+    copyTemplate("launch.json.jinja", '.vscode/launch.json', project_name=project_name)
 
-    launch_path = os.path.join(vscode_path, 'launch.json')
-    if not os.path.exists(launch_path):
-        template = jenv.get_template("launch.json.jinja")
-        contents = template.render(project_name=project_name)
-        with open(launch_path, 'w') as f:
-            f.write(contents)
 
 if __name__ == '__main__':
     checkExt()
