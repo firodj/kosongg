@@ -8,10 +8,11 @@
 #include "hscpp/mem/Ref.h"
 #include "hscpp/mem/MemoryManager.h"
 #endif
+struct HsCppProgress;
 
 struct ImGuiContext;
 class MainWidget;
-struct HsCppProgress;
+class ImKosongg;
 
 class Globals
 {
@@ -26,11 +27,14 @@ public:
 
 	ImGuiContext* pImGuiContext{nullptr};
 #ifdef _USE_HSCPP_
+	std::unique_ptr<HsCppProgress> pHsCppProgress;
+
 	hscpp::mem::MemoryManager *pMemoryManager{nullptr};
 	hscpp::mem::UniqueRef<MainWidget> pMainWidget;
-	std::unique_ptr<HsCppProgress> pHsCppProgress;
+	hscpp::mem::UniqueRef<ImKosongg> pImKosongg;
 #else
 	std::unique_ptr<MainWidget> pMainWidget;
+	std::unique_ptr<ImKosongg> pImKosongg;
 #endif
 	// hscpp::mem::UniqueRef<CustomControls> pCustomControls;
 

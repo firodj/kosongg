@@ -15,7 +15,7 @@
 #endif
 
 #include <kosongg/IconsFontAwesome6.h>
-#include "kosongg/Component.h"
+#include "imkosongg/ImKosongg.hpp"
 
 #include <regex>
 
@@ -30,7 +30,7 @@ hscpp_require_include_dir("${projPath}/ext/hscpp/extensions/mem/include")
 // hscpp_require_source("OtherSource.cpp")
 
 hscpp_if (os == "Windows")
-	hscpp_require_library("${buildPath}/Debug/imgui.lib")
+	hscpp_require_library("${buildPath}/kosongg/cpp/imgui/Debug/imgui.lib")
 	hscpp_if (use_ifd)
 		hscpp_require_library("${buildPath}/Debug/ifd.lib")
 	hscpp_end()
@@ -168,11 +168,11 @@ void MainWidget::ToolbarUI()
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32_WHITE);
 	}
 
-	if (ImGui::ColoredButtonV1(ICON_FA_PLAY " Play")) {
+	if (globals->pImKosongg->ColoredButtonV1(ICON_FA_PLAY " Play")) {
 		//
 	}
 	ImGui::SameLine();
-	if (ImGui::ColoredButtonV1(ICON_FA_STOP " Stop")) {
+	if (globals->pImKosongg->ColoredButtonV1(ICON_FA_STOP " Stop")) {
 		//
 	}
 

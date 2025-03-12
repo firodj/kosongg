@@ -83,6 +83,7 @@ def createStarter():
 
     try:
         os.makedirs(os.path.join(project_path, 'src'))
+        os.makedirs(os.path.join(project_path, 'src', 'watched'))
     except FileExistsError as e:
         print("DEBUG:", e)
 
@@ -94,12 +95,12 @@ def createStarter():
     copyTemplate("MainApp.cpp.jinja", "src/MainApp.cpp", project_name=project_name)
     copyTemplate("MainApp.hpp.jinja", "src/MainApp.hpp")
 
-    sources.append("src/MainWidget.cpp")
-    headers.append("src/MainWidget.hpp")
+    sources.append("src/watched/MainWidget.cpp")
+    headers.append("src/watched/MainWidget.hpp")
 
-    copyTemplate("MainWidget.cpp.jinja", "src/MainWidget.cpp")
-    copyTemplate("MainWidget.hpp.jinja", "src/MainWidget.hpp")
-    
+    copyTemplate("MainWidget.cpp.jinja", "src/watched/MainWidget.cpp")
+    copyTemplate("MainWidget.hpp.jinja", "src/watched/MainWidget.hpp")
+
 
 def checkRunPy():
     dst = copyTemplate("run.py.jinja", "run.py", project_name=project_name)
@@ -108,7 +109,7 @@ def checkRunPy():
         os.chmod(dst, st.st_mode | stat.S_IEXEC)
 
 def checkInfoPlist():
-    copyTemplate("Info.plist.in.jinja", "Info.plist.in", 
+    copyTemplate("Info.plist.in.jinja", "Info.plist.in",
             project_name=project_name,
             bundle_reverse_domain=bundle_reverse_domain,
         )

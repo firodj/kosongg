@@ -241,7 +241,7 @@ class LibraryManager:
     def useImgui(self):
         self.append(dict(
             name = "imgui",
-            path = "kosongg/cmake/imgui",
+            path = "kosongg/cpp/imgui",
             link_libs = [
                 'imgui',
             ],
