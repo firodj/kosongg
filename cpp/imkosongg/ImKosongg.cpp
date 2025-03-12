@@ -1,16 +1,76 @@
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#endif
+#include "ImKosongg.hpp"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "kosongg/Component.h"
+
+#include "kosongg/HsCppMacros.hpp"
+
+hscpp_require_include_dir("${projPath}/kosongg/cpp")
+hscpp_require_include_dir("${projPath}/ext/imgui-docking")
+hscpp_require_include_dir("${projPath}/ext/hscpp/extensions/mem/include")
+
+// hscpp_require_source("OtherSource.cpp")
+//hscpp_require_source("${projPath}/kosongg/cpp/Component.cpp")
+
+hscpp_if (os == "Windows")
+    hscpp_require_library("${buildPath}/kosongg/cpp/imgui/Debug/imgui.lib")
+	hscpp_require_library("${buildPath}/ext/hscpp/extensions/mem/Debug/hscpp-mem.lib")
+hscpp_elif (os == "Darwin")
+    hscpp_require_library("${projPath}/bin/libimgui.dylib")
+	hscpp_require_library("${buildPath}/ext/hscpp/extensions/mem/Debug/libhscpp-mem.a")
+hscpp_elif (os == "Linux")
+	hscpp_require_library("${projPath}/bin/libimgui.so")
+	hscpp_require_library("${buildPath}/ext/hscpp/extensions/mem/Debug/libhscpp-mem.a")
+hscpp_else()
+    // Diagnostic messages can be printed to the build output with hscpp_message.
+    hscpp_message("Unknown OS ${os}.")
+hscpp_end()
+
 
 // TODO: shadow https://github.com/ocornut/imgui/issues/1329
 
-// https://github.com/ocornut/imgui/issues/3710
-void ImGui::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int vert_start_idx, int vert_end_idx, ImVec2 gradient_p0, ImVec2 gradient_p1, ImU32 col0, ImU32 col1)
+ImKosongg::ImKosongg()
 {
+#ifdef _USE_HSCPP_
+    auto cb = [this](hscpp::SwapInfo& info) {
+		//info.Save("showDemoWindow",   m_showDemoWindow);
+
+    };
+
+    Hscpp_SetSwapHandler(cb);
+
+	if (Hscpp_IsSwapping()) {
+		return;
+	}
+#endif
+	Creating();
+}
+
+ImKosongg::~ImKosongg()
+{
+#ifdef _USE_HSCPP_
+    if (Hscpp_IsSwapping())
+    {
+        return;
+    }
+#endif
+	Destroying();
+}
+
+void ImKosongg::Creating()
+{
+
+}
+void ImKosongg::Destroying()
+{
+
+}
+
+void ImKosongg::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int vert_start_idx, int vert_end_idx, ImVec2 gradient_p0, ImVec2 gradient_p1, ImU32 col0, ImU32 col1)
+{
+    // https://github.com/ocornut/imgui/issues/3710
+
     ImVec2 gradient_extent = gradient_p1 - gradient_p0;
     float gradient_inv_length2 = 1.0f / ImLengthSqr(gradient_extent);
     ImDrawVert* vert_start = draw_list->VtxBuffer.Data + vert_start_idx;
@@ -35,7 +95,8 @@ void ImGui::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int ver
     }
 }
 
-ImVec2 ImGui::CalcButtonSizeWithText(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width) {
+ImVec2 ImKosongg::CalcButtonSizeWithText(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width)
+{
     (void)wrap_width;
 
     ImGuiContext& g = *ImGui::GetCurrentContext();
@@ -46,11 +107,11 @@ ImVec2 ImGui::CalcButtonSizeWithText(const char* text, const char* text_end, boo
     return label_size;
 }
 
-#define COLORED_BUTTON_MODE 3
-
-// https://github.com/ocornut/imgui/issues/4722
-bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
+bool ImKosongg::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
 {
+#define COLORED_BUTTON_MODE 3
+    // https://github.com/ocornut/imgui/issues/4722
+
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems)
         return false;
@@ -154,7 +215,7 @@ bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButt
     }
 #endif
     if (g.Style.FrameBorderSize > 0.0f)
-        window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
+        window->DrawList->AddRect(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_Border), g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
 
     if (g.LogEnabled)
         ImGui::LogSetNextTextDecoration("[", "]");
@@ -167,3 +228,4 @@ bool ImGui::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButt
     //IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
     return pressed;
 }
+
