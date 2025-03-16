@@ -125,11 +125,13 @@ void MainApp::RunImGui() {
 }
 
 void MainApp::Init(std::vector<std::string> &args) {
+	m_impl->globals = std::make_unique<Globals>();
+	m_impl->globals->getResourcePath = std::bind(&MainApp::GetResourcePath, this, std::placeholders::_1, std::placeholders::_2);
+
 	ReadIniConfig();
 	// InitSDL & InitImGui
 	EngineBase::Init(args);
 
-	m_impl->globals = std::make_unique<Globals>();
 	m_impl->globals->pImGuiContext = ImGui::GetCurrentContext();
 
 #ifdef _USE_HSCPP_
@@ -200,6 +202,8 @@ void MainApp::Init(std::vector<std::string> &args) {
 }
 
 void MainApp::Clean() {
+	// Place your globals cleanup here!
+
 	#ifdef _USE_HSCPP_
 		m_impl->globals.reset();
 		m_impl->swapper.reset();

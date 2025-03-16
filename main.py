@@ -83,6 +83,10 @@ def createStarter():
 
     try:
         os.makedirs(os.path.join(project_path, 'src'))
+    except FileExistsError as e:
+        print("DEBUG:", e)
+
+    try:
         os.makedirs(os.path.join(project_path, 'src', 'watched'))
     except FileExistsError as e:
         print("DEBUG:", e)
