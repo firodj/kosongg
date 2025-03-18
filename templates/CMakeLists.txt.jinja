@@ -45,6 +45,10 @@ add_subdirectory({{ lib.path }})
 {%- endfor %}
 {%- endfor %}
 
+if (IS_ABSOLUTE ${IMGUI_DIR})
+  file(RELATIVE_PATH IMGUI_DIR ${PROJECT_SOURCE_DIR} ${IMGUI_DIR})
+endif()
+
 include_directories(SYSTEM
 {%- for lib in libraries -%}
 {% for inc in lib.include_dirs if lib.include_dirs %}
@@ -138,8 +142,17 @@ add_executable({{ project_name }}
 )
 endif()
 
-source_group("Source Files" FILES ${SOURCE})
-source_group("Header Files" FILES ${HEADERS})
+foreach(_source IN ITEMS ${SOURCE})
+    get_filename_component(_source_path "${_source}" PATH)
+    string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
+    source_group("${_source_path_msvc}" FILES "${_source}")
+endforeach()
+
+foreach(_source IN ITEMS ${HEADERS})
+    get_filename_component(_source_path "${_source}" PATH)
+    string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
+    source_group("${_source_path_msvc}" FILES "${_source}")
+endforeach()
 
 if (MSVC)
 {%- if msvc.link_libs %}
