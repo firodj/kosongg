@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION {{ cmake_min_version }})
 project({{ project_name }})
 
+set(EXT_PATH "{{ ext_path }}")
+if (IS_ABSOLUTE ${EXT_PATH})
+  file(RELATIVE_PATH EXT_PATH ${PROJECT_SOURCE_DIR} ${EXT_PATH})
+endif()
+message(STATUS "Relative EXT_PATH = ${EXT_PATH}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_STANDARD {{ cpp_std }})
 set(CMAKE_C_STANDARD {{ c_std }})
@@ -38,7 +43,11 @@ find_package({{ req }} REQUIRED)
 set({{ set.name }} {{ set.value | value_format }})
 {%- endfor %}
 {%- if lib.path %}
-add_subdirectory({{ lib.path }})
+{%-   if lib.path.startswith("./") %}
+add_subdirectory("{{ lib.path[2:] }}")
+{%-   else %}
+add_subdirectory("${EXT_PATH}/{{ lib.path }}" "ext/{{ lib.name }}")
+{%-   endif %}
 {%- endif %}
 {%- for cmd in lib.cmds if lib.cmds %}
 {{ cmd }}
@@ -48,6 +57,7 @@ add_subdirectory({{ lib.path }})
 if (IS_ABSOLUTE ${IMGUI_DIR})
   file(RELATIVE_PATH IMGUI_DIR ${PROJECT_SOURCE_DIR} ${IMGUI_DIR})
 endif()
+message(STATUS "Relative IMGUI_DIR = ${IMGUI_DIR}")
 
 include_directories(SYSTEM
 {%- for lib in libraries -%}

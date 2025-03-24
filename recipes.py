@@ -2,9 +2,10 @@ from dulwich import porcelain
 from dulwich.repo import Repo
 
 class LibraryManager:
-    def __init__(self, project_path):
+    def __init__(self, project_path, ext_path):
         self.libraries = dict()
         self.project_path = project_path
+        self.ext_path = ext_path
         self.registers()
         self.lib_orders = 0
 
@@ -34,7 +35,7 @@ class LibraryManager:
         repo = self.libraries[name].get('repo')
         if not repo: return
 
-        repo_path = self.project_path + '/' + repo['path']
+        repo_path = self.ext_path + '/' + repo['path']
 
         try:
             print("Recipe:", repo)
@@ -108,10 +109,10 @@ class LibraryManager:
                     help="Use hardware virtualization backend for Unicorn-Engine",
                     value=False)
             ],
-            path = "ext/unicorn2",
+            path = "unicorn2",
             repo = dict(
                 url='https://github.com/unicorn-engine/unicorn.git',
-                path='ext/unicorn2',
+                path='unicorn2',
                 branch='2.0.1.post1',
             )
         ))
@@ -119,7 +120,7 @@ class LibraryManager:
     def useKeystoneEngine(self):
         self.append(dict(
             name="keystone",
-            path = "ext/keystone",
+            path = "keystone",
             link_libs = ["keystone"],
             include_dirs = ['${keystone_SOURCE_DIR}/include'],
             sets = [
@@ -128,7 +129,7 @@ class LibraryManager:
             ],
             repo=dict(
                 url='git@github.com:firodj/keystone.git',
-                path='ext/keystone',
+                path='keystone',
                 branch='firodj'
             )
         ))
@@ -136,7 +137,7 @@ class LibraryManager:
     def useCapstoneEngine(self):
         self.append(dict(
             name="capstone",
-            path = "ext/capstone",
+            path = "capstone",
             sets = [
                 dict(name="CAPSTONE_BUILD_TESTS", value=False),
                 dict(name="CAPSTONE_BUILD_CSTOOL", value=False),
@@ -148,7 +149,7 @@ class LibraryManager:
             include_dirs = ['${capstone_SOURCE_DIR}/include'],
             repo=dict(
                 url='https://github.com/capstone-engine/capstone.git',
-                path='ext/capstone',
+                path='capstone',
                 branch='5.0.1'
             )
         ))
@@ -168,10 +169,10 @@ class LibraryManager:
             defs = ["SDL_MAIN_HANDLED"],
             link_libs = ["SDL2"],
             options = [],
-            path = "ext/sdl2",
+            path = "sdl2",
             repo = dict(
                 url='https://github.com/libsdl-org/SDL.git',
-                path='ext/sdl2',
+                path='sdl2',
                 branch='release-2.30.2',
             ),
             onhook = onhook,
@@ -210,16 +211,13 @@ class LibraryManager:
             link_libs = [
                 'glad_gl_core_33',
             ],
-            sets = [
-                dict(name="GLAD_SOURCES_DIR", value='${PROJECT_SOURCE_DIR}/ext/glad2')
-            ],
             cmds = [
-                'add_subdirectory("${GLAD_SOURCES_DIR}/cmake" glad_cmake)',
+                'add_subdirectory("${EXT_PATH}/glad2/cmake" glad_cmake)',
                 'glad_add_library(glad_gl_core_33 REPRODUCIBLE API gl:core=3.3)',
             ],
             repo = dict(
                 url='https://github.com/Dav1dde/glad.git',
-                path='ext/glad2',
+                path='glad2',
                 branch='glad2',
             )
         ))
@@ -227,13 +225,13 @@ class LibraryManager:
     def useGlm(self):
         self.append(dict(
             name = "glm",
-            sets = [dict(name='GLM_DIR', value='ext/glm')],
+            sets = [dict(name='GLM_DIR', value='${EXT_PATH}/glm')],
             include_dirs = [
                 '${GLM_DIR}',
             ],
             repo = dict(
                 url='https://github.com/g-truc/glm.git',
-                path='ext/glm',
+                path='glm',
                 branch='1.0.0',
             )
         ))
@@ -241,13 +239,13 @@ class LibraryManager:
     def useImgui(self):
         self.append(dict(
             name = "imgui",
-            path = "kosongg/cpp/imgui",
+            path = "./kosongg/cpp/imgui",
             link_libs = [
                 'imgui',
             ],
             repo = dict(
                 url='https://github.com/ocornut/imgui.git',
-                path='ext/imgui-docking',
+                path='imgui-docking',
                 branch="docking",
                 #branch='v1.91.6-docking',
             )
@@ -256,7 +254,7 @@ class LibraryManager:
     def useYaml(self):
         self.append(dict(
             name = "yaml-cpp",
-            path = "ext/yaml-cpp",
+            path = "yaml-cpp",
             include_dirs = [
                 '${YAML_CPP_SOURCE_DIR}/include',
             ],
@@ -265,7 +263,7 @@ class LibraryManager:
             ],
             repo = dict(
                 url='https://github.com/jbeder/yaml-cpp.git',
-                path='ext/yaml-cpp',
+                path='yaml-cpp',
                 branch='0.8.0',
             )
         ))
@@ -273,7 +271,7 @@ class LibraryManager:
     def useEnet(self):
         self.append(dict(
             name="enet",
-            path="ext/enet",
+            path="enet",
             include_dirs=['${enet_SOURCE_DIR}/include'],
             link_libs = [
                 "enet"
@@ -281,7 +279,7 @@ class LibraryManager:
             defs = ["DPLAY_ENET"],
             repo=dict(
                 url="https://github.com/lsalzman/enet.git",
-                path="ext/enet",
+                path="enet",
                 branch="v1.3.14",
             ),
             msvc = dict(
@@ -293,14 +291,14 @@ class LibraryManager:
     def useFmt(self):
         self.append(dict(
             name="fmt",
-            path="ext/fmt",
+            path="fmt",
             include_dirs=['${fmt_SOURCE_DIR}/include'],
             link_libs = [
                 "fmt"
             ],
             repo=dict(
                 url="https://github.com/fmtlib/fmt.git",
-                path="ext/fmt",
+                path="fmt",
                 branch="10.2.1",
             ),
         ))
@@ -308,13 +306,13 @@ class LibraryManager:
     def usePeParse(self):
         self.append(dict(
             name="pe-parse",
-            path="ext/pe-parse/pe-parser-library",
+            path="pe-parse/pe-parser-library",
             link_libs = [
                 "pe-parse::pe-parse"
             ],
             repo=dict(
                 url="https://github.com/trailofbits/pe-parse.git",
-                path="ext/pe-parse",
+                path="pe-parse",
                 branch="v2.1.1",
             ),
         ))
@@ -322,10 +320,10 @@ class LibraryManager:
     def useGoogleTest(self):
         self.append(dict(
             name="googletest",
-            path="ext/googletest",
+            path="googletest",
             repo=dict(
                 url="https://github.com/google/googletest.git",
-                path="ext/googletest",
+                path="googletest",
                 branch="v1.14.0",
             ),
         ))
@@ -333,14 +331,14 @@ class LibraryManager:
     def useArgh(self):
         self.append(dict(
             name="argh",
-            path="ext/argh",
+            path="argh",
             sets = [
                 dict(name="BUILD_TESTS", value=False),
                 dict(name="BUILD_EXAMPLES", value=False),
             ],
             repo=dict(
                 url="https://github.com/adishavit/argh",
-                path="ext/argh",
+                path="argh",
                 branch="v1.3.2",
             ),
         ))
@@ -348,13 +346,13 @@ class LibraryManager:
     def useLibAssert(self):
         self.append(dict(
             name="libassert",
-            path="ext/libassert",
+            path="libassert",
             link_libs = [
                 "libassert::assert"
             ],
             repo=dict(
                 url="https://github.com/jeremy-rifkin/libassert.git",
-                path="ext/libassert",
+                path="libassert",
                 branch="v2.0.1",
             ),
         ))
@@ -362,13 +360,13 @@ class LibraryManager:
     def useJdksMidi(self):
         self.append(dict(
             name="jdksmidi",
-            path="ext/jdksmidi",
+            path="jdksmidi",
             link_libs = [
                 "jdksmidi"
             ],
             repo=dict(
                 url="https://github.com/firodj/jdksmidi.git",
-                path="ext/jdksmidi",
+                path="jdksmidi",
                 branch="dev",
             ),
         ))
@@ -376,10 +374,10 @@ class LibraryManager:
     def useTinySoundFont(self):
         self.append(dict(
             name="tsf",
-            path="ext/tsf",
+            path="tsf",
             repo=dict(
                 url="https://github.com/firodj/tsf.git",
-                path="ext/tsf",
+                path="tsf",
                 branch="dev",
             ),
         ))
@@ -387,10 +385,10 @@ class LibraryManager:
     def useDynalo(self):
         self.append(dict(
             name="dynalo",
-            path="ext/dynalo",
+            path="dynalo",
             repo=dict(
                 url="https://github.com/Stat1cV01D/dynalo.git",
-                path="ext/dynalo",
+                path="dynalo",
                 branch="master",
             ),
         ))
@@ -398,7 +396,7 @@ class LibraryManager:
     def useHsCpp(self):
         self.append(dict(
             name="hscpp",
-            path="ext/hscpp",
+            path="hscpp",
             sets = [
                 dict(name="HSCPP_BUILD_EXAMPLES", value=False),
                 dict(name="HSCPP_BUILD_TESTS", value=False),
@@ -410,7 +408,7 @@ class LibraryManager:
             ],
             repo=dict(
                 url="https://github.com/firodj/hscpp.git",
-                path="ext/hscpp",
+                path="hscpp",
                 branch="firodj",
             ),
         ))
@@ -418,7 +416,7 @@ class LibraryManager:
     def useIfd(self):
         self.append(dict(
             name="ifd",
-            path="ext/ifd",
+            path="ifd",
             sets = [
                 dict(name="ifd_BUILD_EXAMPLES", value=False),
             ],
@@ -426,7 +424,7 @@ class LibraryManager:
             link_libs = ['ifd'],
             repo=dict(
                 url="https://github.com/firodj/ifd.git",
-                path="ext/ifd",
+                path="ifd",
                 branch="firodj",
             ),
         ))

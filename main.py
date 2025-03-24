@@ -15,12 +15,13 @@ bundle_reverse_domain = 'org.kosongg'
 current_path = os.path.dirname(__file__)
 project_path = os.path.normpath(os.path.join(current_path, '../'))
 project_name = os.path.basename(project_path)
+ext_path = os.path.abspath( project_path + '/../ext' )
 
 sources = []
 headers = []
 others  = []
 
-libmgr = recipes.LibraryManager(project_path)
+libmgr = recipes.LibraryManager(project_path, ext_path)
 jenv = jinja2.Environment(
     loader=jinja2.FileSystemLoader(current_path + "/templates")
 )
@@ -55,6 +56,7 @@ def createCMake():
     contents = template.render(
         cmake_min_version=cmake_min_version,
         project_name=project_name,
+        ext_path=ext_path,
         cpp_std=cpp_std,
         c_std=c_std,
         libraries=libs,
@@ -119,7 +121,7 @@ def checkInfoPlist():
         )
 
 def checkExt():
-    ext_path = project_path + '/ext'
+    
 
     if not os.path.exists(ext_path):
         os.mkdir(ext_path)
