@@ -15,7 +15,20 @@ bundle_reverse_domain = 'org.kosongg'
 current_path = os.path.dirname(__file__)
 project_path = os.path.normpath(os.path.join(current_path, '../'))
 project_name = os.path.basename(project_path)
-ext_path = os.path.abspath( project_path + '/../ext' )
+
+def find_ext_path(path):
+    orig_path = path
+    while True:
+        path = os.path.dirname(path)
+        if len(path) > 0:
+            p = os.path.basename(path)
+            if (not p.startswith("@")):
+                break
+        else:
+            path = orig_path
+    return path.replace('\\', '/') + '/ext'
+
+ext_path = find_ext_path(project_path)
 
 sources = []
 headers = []
@@ -121,7 +134,7 @@ def checkInfoPlist():
         )
 
 def checkExt():
-    
+
 
     if not os.path.exists(ext_path):
         os.mkdir(ext_path)
