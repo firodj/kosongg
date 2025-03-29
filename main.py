@@ -29,6 +29,8 @@ def find_ext_path(path):
     return path.replace('\\', '/') + '/ext'
 
 ext_path = find_ext_path(project_path)
+ext_path_rel = os.path.relpath(ext_path, project_path)
+print("DEBUG: ext_path = ", ext_path, ext_path_rel)
 
 sources = []
 headers = []
@@ -69,7 +71,6 @@ def createCMake():
     contents = template.render(
         cmake_min_version=cmake_min_version,
         project_name=project_name,
-        ext_path=ext_path,
         cpp_std=cpp_std,
         c_std=c_std,
         libraries=libs,
@@ -122,7 +123,10 @@ def createStarter():
 
 
 def checkRunPy():
-    dst = copyTemplate("run.py.jinja", "run.py", project_name=project_name)
+    dst = copyTemplate("run.py.jinja", "run.py",
+            project_name=project_name,
+            ext_path=ext_path,
+            )
     if dst:
         st = os.stat(dst)
         os.chmod(dst, st.st_mode | stat.S_IEXEC)

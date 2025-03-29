@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION {{ cmake_min_version }})
 project({{ project_name }})
 
-set(EXT_PATH "{{ ext_path }}")
+set(EXT_PATH "../ext" CACHE PATH "Ext folder")
 if (IS_ABSOLUTE ${EXT_PATH})
   file(RELATIVE_PATH EXT_PATH ${PROJECT_SOURCE_DIR} ${EXT_PATH})
 endif()
 message(STATUS "Relative EXT_PATH = ${EXT_PATH}")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_STANDARD {{ cpp_std }})
 set(CMAKE_C_STANDARD {{ c_std }})

@@ -32,10 +32,11 @@ if len(args) >= 1:
 
 bin_path = os.path.join(current_path, "bin")
 build_path = os.path.join(current_path, build_name)
+cmake_options = "-DEXT_PATH={{ ext_path }}"
 if not os.path.exists(build_path):
   os.mkdir(build_path)
 if not os.path.exists(os.path.join(build_path, "CMakeCache.txt")):
-  subprocess.run("cmake -S . -B %s -G \"%s\"" % (build_name, generator_name), shell=True, check=True)
+  subprocess.run("cmake %s -S . -B %s -G \"%s\"" % (cmake_options, build_name, generator_name), shell=True, check=True)
 if generator_name == "Ninja Multi-Config" and not os.path.exists(os.path.join(build_path, "build-%s.ninja" % (build_mode,))):
   subprocess.run("cmake -S . -B %s" % (build_name,), shell=True, check=True)
 
