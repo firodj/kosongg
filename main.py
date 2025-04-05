@@ -170,7 +170,7 @@ def checkExt():
 
 def checkGitIgnore():
     try:
-        contents = ["build-*/", "*.dSYM/", "ext/", ".venv", ".DS_Store"]
+        contents = ["build-*/", "*.dSYM/", "ext/", ".venv", ".DS_Store", ".env"]
 
         with open(os.path.join(project_path, '.gitignore'), 'r') as f:
             for line in f.readlines():
@@ -180,11 +180,13 @@ def checkGitIgnore():
                 if line in contents:
                     contents.remove(line)
                     if len(contents) == 0: break
+
     except FileNotFoundError as e:
         print("DEBUG:", e)
 
     if len(contents) > 0:
         with open(os.path.join(project_path, '.gitignore'), 'a') as f:
+            f.write("\n")
             f.write("\n".join(contents))
 
 def getExistingSources(filename):

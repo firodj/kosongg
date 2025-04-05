@@ -16,6 +16,12 @@ generator_name = "Ninja Multi-Config"
 bin_path = os.path.join(current_path, "bin")
 build_path = os.path.join(current_path, build_name)
 runtime_path = bin_path
+generator_ext = ""
+if os.name == "nt":
+  build_name = "build-msvc"
+  # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2017%202022.html
+  generator_name = "Visual Studio 17 2022"
+  generator_ext = "-A x64"
 
 passargs = []
 args = sys.argv[1:]
