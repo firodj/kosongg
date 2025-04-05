@@ -42,6 +42,7 @@ print("DEBUG: ext_path = ", ext_path, ext_path_rel)
 sources = []
 headers = []
 others  = []
+commands = []
 
 libmgr = recipes.LibraryManager(project_path, ext_path)
 jenv = jinja2.Environment(
@@ -92,13 +93,18 @@ def createCMake():
         f.write(contents)
 
 def copyTemplate(src, dst, *args, **kwargs):
+    force = kwargs.pop('force', False)
     dst_path = os.path.join(project_path, dst)
-    if not os.path.exists(dst_path):
+    exists = os.path.exists(dst_path)
+
+    if not exists or force:
         template = jenv.get_template(src)
         contents = template.render(*args, **kwargs)
         with open(dst_path, 'w') as f:
             f.write(contents)
-    return dst_path
+
+    if exists:
+        return dst_path
 
 def createStarter():
     cmakelists_path = os.path.join(project_path, 'CMakeLists.txt')
@@ -132,7 +138,8 @@ def createStarter():
 def checkRunPy():
     dst = copyTemplate("run.py.jinja", "run.py",
             project_name=project_name,
-            ext_path=ext_path,
+            commands=commands,
+            force=True,
             )
     if dst:
         st = os.stat(dst)
@@ -180,9 +187,9 @@ def checkGitIgnore():
         with open(os.path.join(project_path, '.gitignore'), 'a') as f:
             f.write("\n".join(contents))
 
-def getExistingSources():
+def getExistingSources(filename):
     try:
-        with open(os.path.join(project_path, 'CMakeLists.txt'), 'r') as f:
+        with open(os.path.join(project_path, filename), 'r') as f:
             capture = None
             for line in f.readlines():
                 lineb4 = line.rstrip()
@@ -193,6 +200,8 @@ def getExistingSources():
                     capture = "headers"
                 elif line.startswith("## -- others"):
                     capture = "others"
+                elif line.startswith("## -- commands"):
+                    capture = "commands"
                 elif line.startswith("## -- end"):
                     capture = None
                 else:
@@ -203,6 +212,8 @@ def getExistingSources():
                             headers.append(line)
                         case "others":
                             others.append(lineb4)
+                        case "commands":
+                            commands.append(lineb4)
 
     except FileNotFoundError as e:
         print("DEBUG:", e)
@@ -237,7 +248,8 @@ def checkVscode():
 if __name__ == '__main__':
     checkExt()
     checkConfig()
-    getExistingSources()
+    getExistingSources('CMakeLists.txt')
+    getExistingSources('run.py')
     createStarter()
     createCMake()
     checkRunPy()
