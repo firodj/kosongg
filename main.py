@@ -4,6 +4,9 @@ import jinja2
 import recipes
 import configparser
 from dulwich.repo import Repo, NotGitRepository
+from dotenv import load_dotenv
+load_dotenv()
+EXT_PATH = os.environ.get('EXT_PATH')
 
 cmake_min_version = '3.20'
 project_name = 'cobacoba'
@@ -28,7 +31,11 @@ def find_ext_path(path):
             path = orig_path
     return path.replace('\\', '/') + '/ext'
 
-ext_path = find_ext_path(project_path)
+if EXT_PATH:
+    ext_path = EXT_PATH
+else:
+    ext_path = find_ext_path(project_path)
+
 ext_path_rel = os.path.relpath(ext_path, project_path)
 print("DEBUG: ext_path = ", ext_path, ext_path_rel)
 
@@ -138,8 +145,7 @@ def checkInfoPlist():
         )
 
 def checkExt():
-
-
+    copyTemplate(".env.jinja", '.env', ext_path=ext_path)
     if not os.path.exists(ext_path):
         os.mkdir(ext_path)
 
@@ -157,10 +163,7 @@ def checkExt():
 
 def checkGitIgnore():
     try:
-        contents = ["build-*/", "*.dSYM/", "ext/",
-            project_name, project_name + ".exe",
-            project_name + "d", project_name + "d.exe"
-        ]
+        contents = ["build-*/", "*.dSYM/", "ext/", ".venv", ".DS_Store"]
 
         with open(os.path.join(project_path, '.gitignore'), 'r') as f:
             for line in f.readlines():
