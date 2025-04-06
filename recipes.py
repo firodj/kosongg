@@ -378,7 +378,7 @@ class LibraryManager:
             repo=dict(
                 url="https://github.com/firodj/tsf.git",
                 path="tsf",
-                branch="dev",
+                branch="firodj",
             ),
         ))
 

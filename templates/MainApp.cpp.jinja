@@ -6,7 +6,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
-#include <kosongg/INIReader.h>
+#include <kosongg/mINI.h>
 
 #ifdef _USE_IFD_
 #include <ImFileDialog.hpp>
@@ -222,17 +222,21 @@ void MainApp::ReadIniConfig() {
 
 	std::cout << "Home:" << homepath << std::endl;
 
-	const char * inifilename = "{{ project_name }}.ini";
-	INIReader reader(inifilename);
+	std::string iniPath = GetResourcePath("configs", "{{ project_name }}.ini");
+	const char * inifilename = iniPath.c_str();
 
-	if (reader.ParseError() < 0) {
+	mINI::INIFile inifile(inifilename);
+	mINI::INIStructure ini;
+	if (!inifile.read(ini)) {
 		std::cout << "Can't load:" << inifilename << std::endl;
 		return;
 	}
-
-	std::set<std::string> sections = reader.Sections();
-	for (std::set<std::string>::iterator it = sections.begin(); it != sections.end(); ++it)
-		std::cout << "Section:" << *it << std::endl;
+	for (auto const & [sectionName, section]: ini) {
+		std::cout << "[" << sectionName << "]" << std::endl;
+		for (auto const & value: section) {
+			std::cout << "\t" << value.first << " = " << value.second << std::endl;
+		}
+	}
 }
 
 std::string MainApp::GetResourcePath(const char *path, const char *file) {
