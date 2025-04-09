@@ -353,7 +353,7 @@ class LibraryManager:
             repo=dict(
                 url="https://github.com/jeremy-rifkin/libassert.git",
                 path="libassert",
-                branch="v2.0.1",
+                branch="v2.1.5",
             ),
         ))
 
