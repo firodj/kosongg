@@ -136,6 +136,7 @@ void MainApp::Init(std::vector<std::string> &args) {
 
 #ifdef _USE_HSCPP_
 	auto projPath = hscpp::fs::canonical( hscpp::fs::path(_PROJECT_SRC_PATH_) );
+	auto extPath = hscpp::fs::canonical(hscpp::fs::path(_PROJECT_EXT_PATH_));
 
 	auto swapperConfig = std::make_unique<hscpp::Config>();
 	swapperConfig->compiler.projPath = projPath.u8string();
@@ -153,6 +154,7 @@ void MainApp::Init(std::vector<std::string> &args) {
 	m_impl->swapper->SetVar("os", "Linux");
 #endif
 	m_impl->swapper->SetVar("projPath", projPath.u8string());
+	swapper->SetVar("extPath", extPath.u8string());
 
 #ifdef _USE_IFD_
 	m_impl->swapper->SetVar("use_ifd", true);

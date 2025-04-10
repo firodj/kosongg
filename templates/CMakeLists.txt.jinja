@@ -206,6 +206,7 @@ endif()
 
 list(APPEND _COMPILE_DEFINITIONS
   _PROJECT_SRC_PATH_="${CMAKE_SOURCE_DIR}"
+  _PROJECT_EXT_PATH_="${EXT_PATH}"
 {%- for lib in libraries -%}
 {% for def in lib.defs if lib.defs %}
   {{ def }}
