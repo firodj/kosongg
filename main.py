@@ -120,19 +120,19 @@ def createStarter():
     except FileExistsError as e:
         print("DEBUG:", e)
 
-    copyTemplate("Globals.hpp.jinja", "src/Globals.hpp")
+    copyTemplate("globals.hpp.jinja", "src/globals.hpp")
 
-    sources.append("src/MainApp.cpp")
-    headers.append("src/MainApp.hpp")
+    sources.append("src/mainapp.cpp")
+    headers.append("src/mainapp.hpp")
 
-    copyTemplate("MainApp.cpp.jinja", "src/MainApp.cpp", project_name=project_name)
-    copyTemplate("MainApp.hpp.jinja", "src/MainApp.hpp")
+    copyTemplate("mainapp.cpp.jinja", "src/mainapp.cpp", project_name=project_name)
+    copyTemplate("mainapp.hpp.jinja", "src/mainapp.hpp")
 
-    sources.append("src/watched/MainWidget.cpp")
-    headers.append("src/watched/MainWidget.hpp")
+    sources.append("src/watched/mainwidget.cpp")
+    headers.append("src/watched/mainwidget.hpp")
 
-    copyTemplate("MainWidget.cpp.jinja", "src/watched/MainWidget.cpp")
-    copyTemplate("MainWidget.hpp.jinja", "src/watched/MainWidget.hpp")
+    copyTemplate("mainwidget.cpp.jinja", "src/watched/mainwidget.cpp")
+    copyTemplate("mainwidget.hpp.jinja", "src/watched/mainwidget.hpp")
 
 
 def checkRunPy():

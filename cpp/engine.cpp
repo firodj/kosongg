@@ -16,7 +16,7 @@
 #include <SDL.h>
 #include <filesystem>
 
-#include "kosongg/Engine.h"
+#include "kosongg/engine.hpp"
 #include "kosongg/GLUtil.h"
 #include "kosongg/IconsFontAwesome6.h"
 namespace kosongg {

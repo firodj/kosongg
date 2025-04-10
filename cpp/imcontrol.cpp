@@ -4,7 +4,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "kosongg/HsCppMacros.hpp"
+#include "kosongg/hscpp_macros.hpp"
 
 hscpp_require_include_dir("${projPath}/kosongg/cpp")
 hscpp_require_include_dir("${projPath}/ext/imgui-docking")
@@ -27,7 +27,7 @@ hscpp_else()
     hscpp_message("Unknown OS ${os}.")
 hscpp_end()
 
-
+namespace kosongg {
 // TODO: shadow https://github.com/ocornut/imgui/issues/1329
 
 ImKosongg::ImKosongg()
@@ -229,3 +229,4 @@ bool ImKosongg::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGui
     return pressed;
 }
 
+}

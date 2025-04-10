@@ -88,10 +88,10 @@ endif()
 
 set(SOURCE
   ${VENDOR_DIR}/main.cpp
-  ${VENDOR_DIR}/Engine.cpp
-  ${VENDOR_DIR}/GLUtil.cpp
-  ${VENDOR_DIR}/UtfConv.c
-  ${VENDOR_DIR}/imkosongg/ImKosongg.cpp
+  ${VENDOR_DIR}/engine.cpp
+  ${VENDOR_DIR}/glutil.cpp
+  ${VENDOR_DIR}/utfconv.c
+  ${VENDOR_DIR}/imcontrol.cpp
 
 {%- for lib in libraries -%}
 {% for src in lib.sources if lib.sources %}
@@ -106,10 +106,10 @@ set(SOURCE
 )
 
 set(HEADERS
-  ${VENDOR_DIR}/kosongg/Engine.h
-  ${VENDOR_DIR}/kosongg/GLUtil.h
-  ${VENDOR_DIR}/kosongg/UtfConv.h
-  ${VENDOR_DIR}/imkosongg/ImKosongg.hpp
+  ${VENDOR_DIR}/kosongg/engine.hpp
+  ${VENDOR_DIR}/kosongg/glutil.hpp
+  ${VENDOR_DIR}/kosongg/utfconv.h
+  ${VENDOR_DIR}/kosongg/imcontrol.hpp
 ## -- headers --
 {%- for hdr in headers %}
   {{ hdr }}
@@ -134,7 +134,7 @@ list(APPEND SOURCE
   ${ICON_PATH}
   ${PROJECT_SOURCE_DIR}/kosongg/fonts/selawkl.ttf
   ${PROJECT_SOURCE_DIR}/kosongg/fonts/fa-solid-900.ttf
-  ${VENDOR_DIR}/Utils.mm
+  ${VENDOR_DIR}/utils.mm
 )
 add_executable({{ project_name }} MACOSX_BUNDLE ${SOURCE} ${HEADERS})
 set_target_properties({{ project_name }} PROPERTIES
