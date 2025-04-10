@@ -1,4 +1,4 @@
-#include "ImKosongg.hpp"
+#include "imcontrol.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -30,12 +30,11 @@ hscpp_end()
 namespace kosongg {
 // TODO: shadow https://github.com/ocornut/imgui/issues/1329
 
-ImKosongg::ImKosongg()
+ImControl::ImControl()
 {
 #ifdef _USE_HSCPP_
-    auto cb = [this](hscpp::SwapInfo& info) {
+    auto cb = []([[maybe_unused]] hscpp::SwapInfo& info) {
 		//info.Save("showDemoWindow",   m_showDemoWindow);
-
     };
 
     Hscpp_SetSwapHandler(cb);
@@ -47,7 +46,7 @@ ImKosongg::ImKosongg()
 	Creating();
 }
 
-ImKosongg::~ImKosongg()
+ImControl::~ImControl()
 {
 #ifdef _USE_HSCPP_
     if (Hscpp_IsSwapping())
@@ -58,16 +57,16 @@ ImKosongg::~ImKosongg()
 	Destroying();
 }
 
-void ImKosongg::Creating()
+void ImControl::Creating()
 {
 
 }
-void ImKosongg::Destroying()
+void ImControl::Destroying()
 {
 
 }
 
-void ImKosongg::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int vert_start_idx, int vert_end_idx, ImVec2 gradient_p0, ImVec2 gradient_p1, ImU32 col0, ImU32 col1)
+void ImControl::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int vert_start_idx, int vert_end_idx, ImVec2 gradient_p0, ImVec2 gradient_p1, ImU32 col0, ImU32 col1)
 {
     // https://github.com/ocornut/imgui/issues/3710
 
@@ -95,7 +94,7 @@ void ImKosongg::ShadeVertsLinearColorGradientSetAlpha(ImDrawList* draw_list, int
     }
 }
 
-ImVec2 ImKosongg::CalcButtonSizeWithText(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width)
+ImVec2 ImControl::CalcButtonSizeWithText(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width)
 {
     (void)wrap_width;
 
@@ -107,7 +106,7 @@ ImVec2 ImKosongg::CalcButtonSizeWithText(const char* text, const char* text_end,
     return label_size;
 }
 
-bool ImKosongg::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
+bool ImControl::ColoredButtonV1(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags)
 {
 #define COLORED_BUTTON_MODE 3
     // https://github.com/ocornut/imgui/issues/4722

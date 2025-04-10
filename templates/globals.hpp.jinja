@@ -8,11 +8,13 @@
 #include "hscpp/mem/Ref.h"
 #include "hscpp/mem/MemoryManager.h"
 #endif
-struct HsCppProgress;
 
+struct HsCppProgress;
 struct ImGuiContext;
 class MainWidget;
-class ImKosongg;
+namespace kosongg {
+class ImControl;
+}
 
 class Globals
 {
@@ -31,10 +33,10 @@ public:
 
 	hscpp::mem::MemoryManager *pMemoryManager{nullptr};
 	hscpp::mem::UniqueRef<MainWidget> pMainWidget;
-	hscpp::mem::UniqueRef<ImKosongg> pImKosongg;
+	hscpp::mem::UniqueRef<kosongg::ImControl> pImControl;
 #else
 	std::unique_ptr<MainWidget> pMainWidget;
-	std::unique_ptr<ImKosongg> pImKosongg;
+	std::unique_ptr<kosongg::ImControl> pImControl;
 #endif
 	// hscpp::mem::UniqueRef<CustomControls> pCustomControls;
 	std::function<std::string(const char*, const char*)> getResourcePath;

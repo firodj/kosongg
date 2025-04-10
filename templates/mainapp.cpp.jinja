@@ -1,4 +1,4 @@
-#include "MainApp.hpp"
+#include "mainapp.hpp"
 #include <thread>
 #include <mutex>
 #include <iostream>
@@ -6,7 +6,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
-#include <kosongg/mINI.h>
+#include <kosongg/m_ini.hpp>
 
 #ifdef _USE_IFD_
 #include <ImFileDialog.hpp>
@@ -24,7 +24,7 @@
 
 #include "globals.hpp"
 #include "watched/mainwidget.hpp"
-#include "kosonngg/imcontrol.hpp"
+#include "watched/imcontrol.hpp"
 
 static std::unique_ptr<MainApp> g_mainapp;
 static std::mutex g_mtxMainapp;
@@ -163,7 +163,7 @@ void MainApp::Init(std::vector<std::string> &args) {
 
 	// Source directory to watchs
 	m_impl->swapper->AddSourceDirectory(projPath / "src/watched");
-	m_impl->swapper->AddSourceDirectory(projPath / "kosongg/cpp/imkosongg");
+	m_impl->swapper->AddSourceDirectory(projPath / "kosongg/cpp/watched");
 
 	auto buildPath = hscpp::util::GetHscppBuildPath();
 	m_impl->swapper->SetVar("buildPath", buildPath.u8string());
@@ -186,12 +186,12 @@ void MainApp::Init(std::vector<std::string> &args) {
 
 	m_impl->globals->pMemoryManager = &m_impl->memoryManager;
 	m_impl->globals->pMainWidget = m_impl->memoryManager->Allocate<MainWidget>();
-	m_impl->globals->pImKosongg = m_impl->memoryManager->Allocate<ImKosongg>();
+	m_impl->globals->pImControl = m_impl->memoryManager->Allocate<kosongg::ImControl>();
 #else
 	Globals::SetGlobalUserData(m_impl->globals.get());
 
 	m_impl->globals->pMainWidget = std::make_unique<MainWidget>();
-	m_impl->globals->pImKosongg = std::make_unique<ImKosongg>();
+	m_impl->globals->pImControl = std::make_unique<kosongg::ImControl>();
 #endif
 
 #ifdef _USE_IFD_

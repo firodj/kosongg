@@ -91,7 +91,7 @@ set(SOURCE
   ${VENDOR_DIR}/engine.cpp
   ${VENDOR_DIR}/glutil.cpp
   ${VENDOR_DIR}/utfconv.c
-  ${VENDOR_DIR}/imcontrol.cpp
+  ${VENDOR_DIR}/watched/imcontrol.cpp
 
 {%- for lib in libraries -%}
 {% for src in lib.sources if lib.sources %}
@@ -109,7 +109,7 @@ set(HEADERS
   ${VENDOR_DIR}/kosongg/engine.hpp
   ${VENDOR_DIR}/kosongg/glutil.hpp
   ${VENDOR_DIR}/kosongg/utfconv.h
-  ${VENDOR_DIR}/kosongg/imcontrol.hpp
+  ${VENDOR_DIR}/watched/imcontrol.hpp
 ## -- headers --
 {%- for hdr in headers %}
   {{ hdr }}

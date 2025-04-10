@@ -17,8 +17,9 @@
 #include <filesystem>
 
 #include "kosongg/engine.hpp"
-#include "kosongg/GLUtil.h"
-#include "kosongg/IconsFontAwesome6.h"
+#include "kosongg/glutil.hpp"
+#include "kosongg/iconsfontawesome6.h"
+
 namespace kosongg {
 
 EngineBase::EngineBase(/* dependency */) {

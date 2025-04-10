@@ -1,4 +1,4 @@
-#include "MainWidget.hpp"
+#include "mainwidget.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -15,7 +15,7 @@
 #endif
 
 #include <kosongg/iconsfontawesome6.h>
-#include "kosongg/imcontrol.hpp"
+#include "watched/imcontrol.hpp"
 
 #include <regex>
 
@@ -168,11 +168,11 @@ void MainWidget::ToolbarUI()
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32_WHITE);
 	}
 
-	if (globals->pImKosongg->ColoredButtonV1(ICON_FA_PLAY " Play")) {
+	if (globals->pImControl->ColoredButtonV1(ICON_FA_PLAY " Play")) {
 		//
 	}
 	ImGui::SameLine();
-	if (globals->pImKosongg->ColoredButtonV1(ICON_FA_STOP " Stop")) {
+	if (globals->pImControl->ColoredButtonV1(ICON_FA_STOP " Stop")) {
 		//
 	}
 
