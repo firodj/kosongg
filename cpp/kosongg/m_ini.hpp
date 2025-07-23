@@ -667,8 +667,8 @@ namespace mINI
 	public:
 		bool prettyPrint = false;
 
-		INIWriter(std::filesystem::path filename)
-		: filename(std::move(filename))
+		INIWriter(std::filesystem::path _filename)
+		: filename(std::move(_filename))
 		{
 		}
 		~INIWriter() = default;
@@ -735,8 +735,8 @@ namespace mINI
 		std::filesystem::path filename;
 
 	public:
-		INIFile(std::filesystem::path filename)
-		: filename(std::move(filename))
+		INIFile(std::filesystem::path _filename)
+		: filename(std::move(_filename))
 		{ }
 
 		~INIFile() = default;
