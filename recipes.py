@@ -113,7 +113,7 @@ class LibraryManager:
             repo = dict(
                 url='https://github.com/unicorn-engine/unicorn.git',
                 path='unicorn2',
-                branch='2.0.1.post1',
+                branch='v2.1.4',
             )
         ))
 
@@ -150,7 +150,7 @@ class LibraryManager:
             repo=dict(
                 url='https://github.com/capstone-engine/capstone.git',
                 path='capstone',
-                branch='5.0.1'
+                branch='5.0.6'
             )
         ))
 
