@@ -7,8 +7,8 @@
 #include "kosongg/hscpp_macros.hpp"
 
 hscpp_require_include_dir("${projPath}/kosongg/cpp")
-hscpp_require_include_dir("${projPath}/ext/imgui-docking")
-hscpp_require_include_dir("${projPath}/ext/hscpp/extensions/mem/include")
+hscpp_require_include_dir("${extPath}/imgui-docking")
+hscpp_require_include_dir("${extPath}/hscpp/extensions/mem/include")
 
 // hscpp_require_source("OtherSource.cpp")
 //hscpp_require_source("${projPath}/kosongg/cpp/Component.cpp")

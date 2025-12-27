@@ -21,11 +21,11 @@
 
 hscpp_require_include_dir("${projPath}/src")
 hscpp_require_include_dir("${projPath}/kosongg/cpp")
-hscpp_require_include_dir("${projPath}/ext/imgui-docking")
+hscpp_require_include_dir("${extPath}/imgui-docking")
 hscpp_if (use_ifd)
-	hscpp_require_include_dir("${projPath}/ext/ifd/src")
+	hscpp_require_include_dir("${extPath}/ifd/src")
 hscpp_end()
-hscpp_require_include_dir("${projPath}/ext/hscpp/extensions/mem/include")
+hscpp_require_include_dir("${extPath}/hscpp/extensions/mem/include")
 
 // hscpp_require_source("OtherSource.cpp")
 
