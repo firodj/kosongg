@@ -8406,7 +8406,7 @@ size_t StrLenUtf32AsUtf16(const Utf32Char* pUtf32)
 Utf16Char* Utf32ToUtf16(const Utf32Char* pUtf32)
 {
 	size_t ztUtf32 = 0;
-	Utf16Char* pUtf16 = calloc(StrLenUtf32AsUtf16(pUtf32) + 1, sizeof(Utf16Char));
+	Utf16Char* pUtf16 = (Utf16Char*)calloc(StrLenUtf32AsUtf16(pUtf32) + 1, sizeof(Utf16Char));
 	if (pUtf16) {
 		// https://datatracker.ietf.org/doc/html/rfc3629#page-4
 		// This function skips data when UTF bytes are out of bounds
@@ -8428,7 +8428,7 @@ Utf32Char* Utf16ToUtf32(const Utf16Char* pUtf16)
 {
 	size_t ztUtf16 = 0;
 	size_t ztUtf32 = 0;
-	Utf32Char* pUtf32 = calloc(CharLenUtf16(pUtf16) + 1, sizeof(Utf32Char));
+	Utf32Char* pUtf32 = (Utf32Char*)calloc(CharLenUtf16(pUtf16) + 1, sizeof(Utf32Char));
 	if (pUtf32) {
 		// https://datatracker.ietf.org/doc/html/rfc3629#page-4
 		// This function skips data when UTF bytes are out of bounds
@@ -8618,7 +8618,7 @@ size_t StrLenUtf32AsUtf8(const Utf32Char* pUtf32)
 Utf8Char* Utf32ToUtf8(const Utf32Char* pUtf32)
 {
 	size_t ztUtf32 = 0;
-	Utf8Char* pUtf8 = calloc(StrLenUtf32AsUtf8(pUtf32) + 1, sizeof(Utf8Char));
+	Utf8Char* pUtf8 = (Utf8Char*)calloc(StrLenUtf32AsUtf8(pUtf32) + 1, sizeof(Utf8Char));
 	if (pUtf8) {
 		// https://datatracker.ietf.org/doc/html/rfc3629#page-4
 		// This function skips data when UTF bytes are out of bounds
@@ -8652,7 +8652,7 @@ Utf32Char* Utf8ToUtf32(const Utf8Char* pUtf8)
 {
 	size_t ztUtf8 = 0;
 	size_t ztUtf32 = 0;
-	Utf32Char* pUtf32 = calloc(CharLenUtf8(pUtf8) + 1, sizeof(Utf32Char));
+	Utf32Char* pUtf32 = (Utf32Char*)calloc(CharLenUtf8(pUtf8) + 1, sizeof(Utf32Char));
 	if (pUtf32) {
 		// https://datatracker.ietf.org/doc/html/rfc3629#page-4
 		// This function skips data when UTF bytes are out of bounds
